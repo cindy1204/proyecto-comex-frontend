@@ -1,13 +1,17 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
 import { useAuth } from './auth-provider';
 
 export function AccountForm({ mode }: Readonly<{ mode: 'login' | 'register' }>) {
   const { login, register } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const requestedReturnTo = searchParams.get('returnTo');
+  const returnTo = isInternalPath(requestedReturnTo) ? requestedReturnTo : '/#servicios';
+  const accountHref = `/${mode === 'register' ? 'login' : 'registro'}?returnTo=${encodeURIComponent(returnTo)}`;
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -23,7 +27,7 @@ export function AccountForm({ mode }: Readonly<{ mode: 'login' | 'register' }>) 
     try {
       if (mode === 'register') await register(name, email, password);
       else await login(email, password);
-      router.replace('/mis-interacciones');
+      router.replace(`/mis-interacciones?continuar=${encodeURIComponent(returnTo)}`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'No se pudo completar el acceso.');
     } finally {
@@ -69,10 +73,14 @@ export function AccountForm({ mode }: Readonly<{ mode: 'login' | 'register' }>) 
       </form>
       <p className="form-switch">
         {mode === 'register' ? '¿Ya tienes una cuenta?' : '¿Aún no tienes cuenta?'}{' '}
-        <Link href={mode === 'register' ? '/login' : '/registro'}>
+        <Link href={accountHref}>
           {mode === 'register' ? 'Inicia sesión' : 'Regístrate'}
         </Link>
       </p>
     </section>
   );
+}
+
+function isInternalPath(value: string | null): value is string {
+  return Boolean(value?.startsWith('/') && !value.startsWith('//'));
 }

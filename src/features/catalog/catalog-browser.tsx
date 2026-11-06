@@ -12,10 +12,11 @@ interface CatalogItem {
   title: string;
   description: string;
   note: string | null;
+  imageUrl: string | null;
 }
 
 interface CatalogPage {
-  pagination: { page: number; pageSize: number; total: number; totalPages: number };
+  pagination: { page: number; pageSize: number; total: number; totalPages: number; currentPage: number; limit: number };
   data: CatalogItem[];
 }
 
@@ -24,6 +25,7 @@ const categories = [
   ['exportaciones', 'Exportaciones'],
   ['inversiones', 'Inversiones'],
   ['endeudamiento', 'Endeudamiento'],
+  ['servicios', 'Servicios y transferencias'],
 ] as const;
 
 export function CatalogBrowser() {
@@ -41,7 +43,7 @@ export function CatalogBrowser() {
 
   useEffect(() => {
     const controller = new AbortController();
-    const query = new URLSearchParams({ page: String(page), pageSize: '9' });
+    const query = new URLSearchParams({ currentPage: String(page), limit: '9' });
     if (appliedSearch) query.set('search', appliedSearch);
     if (appliedCategory) query.set('category', appliedCategory);
 
@@ -111,6 +113,7 @@ export function CatalogBrowser() {
                 </div>
                 <p className="eyebrow">{item.category}</p>
                 <h2>{item.title}</h2>
+                {item.imageUrl && <a className="catalog-image-link" href={item.imageUrl} rel="noreferrer" target="_blank">Ver imagen de referencia</a>}
                 <p>{item.description}</p>
                 {item.note && <p className="catalog-note">{item.note}</p>}
               </article>

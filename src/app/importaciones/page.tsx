@@ -14,7 +14,7 @@ export default function ImportationsPage() {
           <p>Registra la información principal de la operación. Selecciona un numeral activo del catálogo para guardar tu solicitud.</p>
         </header>
         <div className="form-card">
-          <ProtectedContent><InteractionForm type="formulario-importaciones" /></ProtectedContent>
+          <ProtectedContent returnTo="/importaciones"><InteractionForm type="formulario-importaciones" /></ProtectedContent>
         </div>
       </div>
     </section>

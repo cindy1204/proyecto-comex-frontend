@@ -1,9 +1,11 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { ApiError, apiRequest } from '@/lib/api';
 import { useAuth } from '@/features/auth/auth-provider';
+import { CatalogImageManager } from './catalog-image-manager';
 
 interface ContactRequest {
   id: string;
@@ -16,6 +18,11 @@ interface ContactRequest {
   createdAt: string;
 }
 
+interface ContactRequestsPage {
+  data: ContactRequest[];
+  pagination: { total: number; currentPage: number; limit: number; totalPages: number };
+}
+
 const productLabels: Record<string, string> = {
   importaciones: 'Importaciones de bienes',
   exportaciones: 'Exportaciones de bienes',
@@ -24,11 +31,11 @@ const productLabels: Record<string, string> = {
   servicios: 'Servicios, transferencias y otros conceptos',
 };
 
-const originalHomepageUrl = 'http://localhost:8000/paginappal/index.html';
-
 export function AdminDashboard() {
   const { user, token, loading: authLoading, error: authError, login, logout, restoreSession } = useAuth();
+  const router = useRouter();
   const [contacts, setContacts] = useState<ContactRequest[]>([]);
+  const [contactsPagination, setContactsPagination] = useState<ContactRequestsPage['pagination'] | null>(null);
   const [contactsLoading, setContactsLoading] = useState(false);
   const [contactsError, setContactsError] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
@@ -38,10 +45,14 @@ export function AdminDashboard() {
   const [adminSubmitting, setAdminSubmitting] = useState(false);
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
   const [registrationRole, setRegistrationRole] = useState<'user' | 'admin'>('user');
+  const [contactsPage, setContactsPage] = useState(1);
+  const [contactsType, setContactsType] = useState('');
+  const [contactsSearch, setContactsSearch] = useState('');
+  const [appliedSearch, setAppliedSearch] = useState('');
 
   function closeAdminSession() {
     logout();
-    window.location.assign(originalHomepageUrl);
+    router.push('/');
   }
 
   const loadContacts = useCallback(async (signal: AbortSignal) => {
@@ -50,8 +61,12 @@ export function AdminDashboard() {
     setContactsLoading(true);
     setContactsError('');
     try {
-      const result = await apiRequest<{ data: ContactRequest[] }>('/api/contacto', { token, signal });
+      const query = new URLSearchParams({ currentPage: String(contactsPage), limit: '10' });
+      if (contactsType) query.set('tipoProducto', contactsType);
+      if (appliedSearch) query.set('search', appliedSearch);
+      const result = await apiRequest<ContactRequestsPage>(`/api/solicitudes-contacto?${query}`, { token, signal });
       setContacts(result.data);
+      setContactsPagination(result.pagination);
     } catch (error) {
       if (signal.aborted) return;
       if (error instanceof ApiError && error.status === 401) {
@@ -63,7 +78,7 @@ export function AdminDashboard() {
     } finally {
       if (!signal.aborted) setContactsLoading(false);
     }
-  }, [token, user?.role, logout]);
+  }, [token, user?.role, logout, contactsPage, contactsType, appliedSearch]);
 
   useEffect(() => {
     if (!token || user?.role !== 'admin') return;
@@ -77,6 +92,13 @@ export function AdminDashboard() {
       controller.abort();
     };
   }, [token, user?.role, refreshKey, loadContacts]);
+
+  function applyContactFilters(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setContactsPage(1);
+    setAppliedSearch(contactsSearch.trim());
+    setContactsLoading(true);
+  }
 
   async function submitLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -127,7 +149,7 @@ export function AdminDashboard() {
 
   if (authLoading) {
     return (
-      <section className="section admin-page">
+      <section className="section section-muted">
         <div className="section-container"><p className="notice">Verificando acceso…</p></div>
       </section>
     );
@@ -135,7 +157,7 @@ export function AdminDashboard() {
 
   if (authError && !user) {
     return (
-      <section className="section admin-page">
+      <section className="section section-muted">
         <div className="section-container">
           <div className="notice notice-error" role="alert">
             <p>{authError}</p>
@@ -150,7 +172,7 @@ export function AdminDashboard() {
 
   if (!user) {
     return (
-      <section className="section admin-page">
+      <section className="section section-muted">
         <div className="section-container">
           <div className="form-card account-card">
             <p className="eyebrow">Área restringida</p>
@@ -179,7 +201,7 @@ export function AdminDashboard() {
 
   if (user.role !== 'admin') {
     return (
-      <section className="section admin-page">
+      <section className="section">
         <div className="section-container">
           <div className="notice notice-error" role="alert">
             <p>La cuenta {user.email} no tiene permisos de administrador.</p>
@@ -194,7 +216,7 @@ export function AdminDashboard() {
   }
 
   return (
-    <section className="section admin-page">
+    <section className="section section-muted">
       <div className="section-container">
         <header className="page-heading">
           <p className="eyebrow">Área restringida</p>
@@ -212,6 +234,21 @@ export function AdminDashboard() {
             <button className="button button-outline" onClick={closeAdminSession} type="button">Cerrar sesión</button>
           </div>
         </div>
+
+        <form className="catalog-filters" onSubmit={applyContactFilters}>
+          <label className="field filter-search">
+            <span>Buscar por nombre o correo</span>
+            <input maxLength={200} onChange={(event) => setContactsSearch(event.target.value)} value={contactsSearch} />
+          </label>
+          <label className="field filter-category">
+            <span>Filtrar por caso</span>
+            <select onChange={(event) => { setContactsType(event.target.value); setContactsPage(1); setContactsLoading(true); }} value={contactsType}>
+              <option value="">Todos los casos</option>
+              {Object.entries(productLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+            </select>
+          </label>
+          <button className="button filter-button" type="submit">Buscar</button>
+        </form>
 
         {contactsLoading && <p className="notice">Cargando solicitudes…</p>}
         {contactsError && (
@@ -277,6 +314,17 @@ export function AdminDashboard() {
             </table>
           </div>
         )}
+        {!contactsLoading && !contactsError && contactsPagination && (
+          <div className="pagination">
+            <span>{contactsPagination.total} solicitudes · Página {contactsPagination.currentPage} de {Math.max(contactsPagination.totalPages, 1)}</span>
+            <div className="pagination-actions">
+              <button className="button button-outline" disabled={contactsPage <= 1} onClick={() => { setContactsPage((page) => page - 1); setContactsLoading(true); }} type="button">Anterior</button>
+              <button className="button button-outline" disabled={contactsPage >= contactsPagination.totalPages} onClick={() => { setContactsPage((page) => page + 1); setContactsLoading(true); }} type="button">Siguiente</button>
+            </div>
+          </div>
+        )}
+
+        <CatalogImageManager />
 
         <section className="admin-register-section">
           <button

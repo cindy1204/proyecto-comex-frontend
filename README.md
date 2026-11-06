@@ -29,6 +29,7 @@ Frontend de ColComex con Next.js App Router, React, TypeScript y Tailwind CSS. L
 - `src/app`: páginas y rutas del App Router.
 - `src/features/auth`: inicio de sesión, registro, contexto de usuario y protección visual de rutas.
 - `src/features/catalog`: búsqueda, filtros y paginación del catálogo.
+- `src/features/services`: fichas de servicio, numerales relacionados y formularios generales.
 - `src/features/contact`: formulario público de contacto.
 - `src/features/interactions`: formularios autenticados de importación/exportación y consulta de solicitudes.
 - `src/lib/api.ts`: cliente HTTP compartido, manejo de respuestas y errores.
@@ -46,15 +47,21 @@ Al iniciar sesión, el frontend guarda el JWT emitido por `/api/auth/login` y lo
 | Ruta | Acceso | Función |
 |---|---|---|
 | `/` | Público | Inicio y servicios |
+| `/servicios/:servicio` | Público | Detalle del servicio, numerales cambiarios y accesos a formulario y asesoría |
+| `/servicios/:servicio/formulario` | Cuenta autenticada | Formularios de servicios, inversiones y endeudamiento; los envíos quedan vinculados a la cuenta |
 | `/catalogo` | Público | Búsqueda y paginación del catálogo |
 | `/contacto` | Público | Formulario de contacto; si hay sesión iniciada, la solicitud queda asociada a la cuenta |
 | `/login` y `/registro` | Público | Autenticación |
-| `/admin` | Público (ingreso); administrador autenticado (panel) | Consultar contactos y registrar administradores |
-| `/importaciones` y `/exportaciones` | Cuenta autenticada | Guardar una interacción ligada al usuario y numeral |
-| `/mis-interacciones` | Cuenta autenticada | Consultar interacciones propias y solicitudes de contacto enviadas con sesión iniciada |
+| `/admin` | Público (ingreso); administrador autenticado (panel) | Consultar solicitudes paginadas/filtrables, registrar cuentas y subir imágenes de catálogo a Supabase Storage |
+| `/importaciones` y `/exportaciones` | Cuenta autenticada | Formularios especializados; guardan la interacción ligada al usuario y numeral |
+| `/mis-interacciones` | Cuenta autenticada | Elegir entre iniciar un formulario y consultar formularios y solicitudes guardadas en la cuenta |
 | `/admin/interacciones` | Administrador | Consultar todas las interacciones |
 
 El primer administrador se configura desde el backend mediante las variables `SEED_ADMIN_*` y `npm run db:seed`. Por seguridad, el registro de administradores desde `/admin` solo está disponible para una sesión administrativa autenticada.
+
+La carga de imágenes del catálogo se realiza desde el panel de administración seleccionando un numeral y subiendo un archivo JPG, PNG o WebP (máximo 5 MB). El backend lo guarda en un bucket público de Supabase Storage y almacena en PostgreSQL la URL generada; no acepta una URL escrita en el formulario. Configura las credenciales de almacenamiento exclusivamente en el backend.
+
+Las fichas de servicio muestran los numerales de importaciones, exportaciones, inversiones, endeudamiento y servicios/transferencias que expone la API, separados en pestañas de ingresos y egresos. Los numerales de servicios/transferencias provienen del Anexo 3 del DCIP-83 aportado (actualizado al 1 de septiembre de 2021); confirma la vigencia normativa antes de usarlos para una operación real. Para diligenciar cualquier formulario, el cliente debe iniciar sesión o crear una cuenta. Los formularios de servicios se guardan como solicitudes vinculadas al usuario, y los de importaciones/exportaciones como interacciones vinculadas al usuario y al numeral; ambos tipos se consultan en Mis solicitudes. El botón de asesoría conserva su flujo de contacto público.
 
 ## Validación
 

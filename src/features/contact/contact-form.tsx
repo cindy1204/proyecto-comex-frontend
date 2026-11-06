@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { apiRequest } from '@/lib/api';
 import { useAuth } from '@/features/auth/auth-provider';
 
@@ -13,7 +14,10 @@ const productTypes = [
 ] as const;
 
 export function ContactForm() {
+  const searchParams = useSearchParams();
   const { token, loading: authLoading } = useAuth();
+  const requestedType = searchParams.get('tipoProducto');
+  const initialProduct = productTypes.find(([value]) => value === requestedType)?.[0] ?? 'importaciones';
   const [message, setMessage] = useState('');
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -66,7 +70,7 @@ export function ContactForm() {
       </div>
       <label className="field">
         <span>Tipo de producto o caso</span>
-        <select defaultValue="importaciones" name="tipoProducto" required>
+        <select defaultValue={initialProduct} name="tipoProducto" required>
           {productTypes.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
         </select>
       </label>

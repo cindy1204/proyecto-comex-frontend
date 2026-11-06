@@ -12,13 +12,15 @@ export async function apiRequest<T>(
   options: { method?: string; body?: unknown; token?: string; signal?: AbortSignal } = {},
 ): Promise<T> {
   const headers = new Headers({ Accept: 'application/json' });
-  if (options.body !== undefined) headers.set('Content-Type', 'application/json');
+  const body = options.body;
+  const isFormData = isMultipartFormData(body);
+  if (body !== undefined && !isFormData) headers.set('Content-Type', 'application/json');
   if (options.token) headers.set('Authorization', `Bearer ${options.token}`);
 
   const response = await fetch(`${apiHost}${path}`, {
     method: options.method ?? 'GET',
     headers,
-    body: options.body === undefined ? undefined : JSON.stringify(options.body),
+    body: body === undefined ? undefined : isFormData ? body : JSON.stringify(body),
     signal: options.signal,
     cache: 'no-store',
   });
@@ -36,6 +38,10 @@ export async function apiRequest<T>(
   }
 
   return payload as T;
+}
+
+function isMultipartFormData(value: unknown): value is FormData {
+  return typeof FormData !== 'undefined' && value instanceof FormData;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

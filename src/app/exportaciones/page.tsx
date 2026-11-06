@@ -14,7 +14,7 @@ export default function ExportationsPage() {
           <p>Registra tu operación, calcula el reintegro neto y consulta los documentos sugeridos para el numeral cambiario.</p>
         </header>
         <div className="form-card">
-          <ProtectedContent><InteractionForm type="formulario-exportaciones" /></ProtectedContent>
+          <ProtectedContent returnTo="/exportaciones"><InteractionForm type="formulario-exportaciones" /></ProtectedContent>
         </div>
       </div>
     </section>

@@ -1,37 +1,5 @@
 import Link from 'next/link';
-
-const services = [
-  {
-    code: 'IM',
-    title: 'Importaciones de bienes',
-    description: 'Asesoría para pagar importaciones y cumplir con los trámites cambiarios.',
-    href: '/importaciones',
-  },
-  {
-    code: 'EX',
-    title: 'Exportaciones de bienes',
-    description: 'Acompañamiento para gestionar los reintegros y obligaciones de exportación.',
-    href: '/exportaciones',
-  },
-  {
-    code: 'SE',
-    title: 'Servicios y transferencias',
-    description: 'Orientación para pagos internacionales por servicios y otros conceptos.',
-    href: '/catalogo',
-  },
-  {
-    code: 'II',
-    title: 'Inversiones internacionales',
-    description: 'Apoyo para comprender y registrar operaciones de inversión internacional.',
-    href: '/catalogo?category=inversiones',
-  },
-  {
-    code: 'DE',
-    title: 'Endeudamiento externo',
-    description: 'Asesoría sobre financiación, avales y garantías con alcance internacional.',
-    href: '/catalogo?category=endeudamiento',
-  },
-];
+import { services } from '@/features/services/service-data';
 
 export default function Home() {
   return (
@@ -47,7 +15,6 @@ export default function Home() {
             </p>
             <div className="hero-actions">
               <Link className="button" href="/contacto">Solicitar asesoría</Link>
-              <Link className="button button-outline" href="/catalogo">Consultar catálogo</Link>
             </div>
           </div>
           <div aria-label="ColComex, soluciones para comercio internacional" className="hero-visual">
@@ -69,7 +36,7 @@ export default function Home() {
           </div>
           <div className="service-grid">
             {services.map((service) => (
-              <Link className="service-card" href={service.href} key={service.code}>
+              <Link className="service-card" href={`/servicios/${service.slug}`} key={service.code}>
                 <span className="service-icon">{service.code}</span>
                 <h3>{service.title}</h3>
                 <p>{service.description}</p>
@@ -93,8 +60,7 @@ export default function Home() {
           <div className="stats-grid">
             <div className="stat-card"><strong>1:1</strong><span>Asesoría según cada caso</span></div>
             <div className="stat-card"><strong>24/7</strong><span>Acceso a tus solicitudes</span></div>
-            <div className="stat-card"><strong>5</strong><span>Líneas de servicio</span></div>
-            <div className="stat-card"><strong>API</strong><span>Catálogo actualizado</span></div>
+            <div className="stat-card"><strong>100%</strong><span>Atención personalizada</span></div>
           </div>
         </div>
       </section>

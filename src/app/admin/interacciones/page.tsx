@@ -6,14 +6,14 @@ export const metadata: Metadata = { title: 'Administración de solicitudes' };
 
 export default function AdminInteractionsPage() {
   return (
-    <section className="section admin-page">
+    <section className="section">
       <div className="section-container">
         <header className="page-heading">
           <p className="eyebrow">Administración</p>
           <h1>Solicitudes recibidas</h1>
           <p>Vista administrativa de las interacciones registradas por las cuentas.</p>
         </header>
-        <ProtectedContent requiredRole="admin"><InteractionsList admin /></ProtectedContent>
+        <ProtectedContent requiredRole="admin" returnTo="/admin/interacciones"><InteractionsList admin /></ProtectedContent>
       </div>
     </section>
   );

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { ContactForm } from '@/features/contact/contact-form';
 
 export const metadata: Metadata = { title: 'Contáctenos' };
@@ -13,7 +14,9 @@ export default function ContactPage() {
           <p>Completa estos datos y nuestro equipo revisará tu caso.</p>
         </header>
         <div className="form-card">
-          <ContactForm />
+          <Suspense fallback={<p className="notice">Cargando formulario…</p>}>
+            <ContactForm />
+          </Suspense>
         </div>
       </div>
     </section>

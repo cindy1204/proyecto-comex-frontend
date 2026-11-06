@@ -8,17 +8,19 @@ import { useAuth } from './auth-provider';
 export function ProtectedContent({
   children,
   requiredRole,
-}: Readonly<{ children: ReactNode; requiredRole?: 'admin' }>) {
+  returnTo = '/mis-interacciones',
+}: Readonly<{ children: ReactNode; requiredRole?: 'admin'; returnTo?: string }>) {
   const { user, loading, error, restoreSession } = useAuth();
   const router = useRouter();
+  const loginHref = `/login?returnTo=${encodeURIComponent(returnTo)}`;
 
   useEffect(() => {
-    if (!loading && !error && !user) router.replace('/login');
-  }, [loading, error, user, router]);
+    if (!loading && !error && !user) router.replace(loginHref);
+  }, [loading, error, user, router, loginHref]);
 
   useEffect(() => {
-    if (!loading && error?.startsWith('Tu sesión venció')) router.replace('/login');
-  }, [loading, error, router]);
+    if (!loading && error?.startsWith('Tu sesión venció')) router.replace(loginHref);
+  }, [loading, error, router, loginHref]);
 
   if (loading) return <p className="notice">Cargando tu sesión…</p>;
   if (error) {
@@ -31,7 +33,7 @@ export function ProtectedContent({
       </div>
     );
   }
-  if (!user) return <p className="notice">Debes <Link href="/login">iniciar sesión</Link> para continuar.</p>;
+  if (!user) return <p className="notice">Debes <Link href={loginHref}>iniciar sesión o crear una cuenta</Link> para continuar.</p>;
   if (requiredRole && user.role !== requiredRole) {
     return <p className="notice notice-error" role="alert">No tienes permisos para ver esta página.</p>;
   }

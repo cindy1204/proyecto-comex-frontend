@@ -1,14 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 
 export function SiteFooter() {
-  const pathname = usePathname();
-  const isAdminPage = pathname.startsWith('/admin');
-
   return (
-    <footer className={`site-footer${isAdminPage ? ' site-footer-admin' : ''}`}>
+    <footer className="site-footer">
       <div className="footer-inner">
         <Link className="brand brand-light" href="/">
           <span className="brand-mark">C</span>

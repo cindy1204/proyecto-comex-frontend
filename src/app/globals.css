@@ -66,153 +66,6 @@ textarea {
   backdrop-filter: blur(12px);
 }
 
-.site-header-admin {
-  border-bottom: 0;
-  background: #004080;
-  padding: 1rem 2rem;
-}
-
-.site-header-admin .header-inner {
-  width: 100%;
-  min-height: 42px;
-  gap: 24px;
-}
-
-.site-header-admin .brand {
-  color: #fff;
-  font-family: 'Segoe UI', sans-serif;
-  font-size: 1.7rem;
-  letter-spacing: 0;
-}
-
-.site-header-admin .brand-mark {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: #ffb703;
-  color: #004080;
-}
-
-.site-header-admin .main-nav {
-  color: #fff;
-  font-family: 'Segoe UI', sans-serif;
-  font-size: 1rem;
-}
-
-.site-header-admin .main-nav a,
-.site-header-admin .login-link {
-  color: #fff;
-  font-weight: 600;
-}
-
-.site-header-admin .account-nav {
-  color: #fff;
-  font-family: 'Segoe UI', sans-serif;
-}
-
-.site-header-admin .account-nav .button {
-  border-color: #ffb703;
-  background: #ffb703;
-  color: #004080;
-}
-
-.admin-page {
-  min-height: calc(100vh - 180px);
-  background: linear-gradient(135deg, #e8f3ff 0%, #dfeefb 100%);
-  color: #1f2937;
-  font-family: 'Segoe UI', sans-serif;
-}
-
-.admin-page .section-container {
-  width: min(1120px, 100%);
-}
-
-.admin-page .page-heading h1,
-.admin-page .page-heading h2 {
-  color: #004080;
-}
-
-.admin-page .page-heading > p:not(.eyebrow),
-.admin-page .muted {
-  color: #465468;
-}
-
-.admin-page .eyebrow {
-  color: #0073e6;
-}
-
-.admin-page .form-card {
-  border: 0;
-  border-radius: 18px;
-  background: #fff;
-  box-shadow: 0 18px 35px rgb(15 23 42 / 8%);
-}
-
-.admin-page .account-card {
-  width: min(500px, 100%);
-  margin-block: 0;
-}
-
-.admin-page .account-card h1,
-.admin-page .admin-register-card h2 {
-  color: #004080;
-}
-
-.admin-page .field {
-  color: #18477c;
-  font-family: 'Segoe UI', sans-serif;
-}
-
-.admin-page .field input,
-.admin-page .field select {
-  border-color: #dce8f6;
-  border-radius: 10px;
-  background: #f9fbff;
-}
-
-.admin-page .field input:focus,
-.admin-page .field select:focus {
-  border-color: #0073e6;
-  outline: none;
-  box-shadow: 0 0 0 4px rgb(0 115 230 / 8%);
-}
-
-.admin-page .button {
-  border-color: #0073e6;
-  border-radius: 8px;
-  background: #0073e6;
-}
-
-.admin-page .button-outline {
-  border-color: #cfe0f7;
-  background: #fff;
-  color: #004080;
-}
-
-.admin-page .notice {
-  background: #e7f1ff;
-  color: #004080;
-}
-
-.admin-page .notice-error {
-  background: #fff0ef;
-  color: #a42a22;
-}
-
-.admin-page .interaction-card {
-  border: 0;
-  border-radius: 14px;
-  box-shadow: 0 8px 18px rgb(0 0 0 / 6%);
-}
-
-.admin-page .interaction-card h2 {
-  color: #004080;
-}
-
-.admin-page .interaction-card summary {
-  color: #0073e6;
-}
-
 .admin-contacts-table-wrapper {
   overflow-x: auto;
   border-radius: 14px;
@@ -311,18 +164,6 @@ textarea {
 .admin-contacts-table .contact-request-description {
   min-width: 220px;
   margin-top: 8px;
-}
-
-.site-footer-admin {
-  margin-top: 0;
-  background: #004080;
-  font-family: 'Segoe UI', sans-serif;
-}
-
-.site-footer-admin .brand-mark {
-  border-radius: 50%;
-  background: #ffb703;
-  color: #004080;
 }
 
 .header-inner,
@@ -814,6 +655,43 @@ textarea {
   gap: 16px;
 }
 
+.numeral-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.numeral-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 700;
+  padding: 12px 16px;
+}
+
+.numeral-tab-active {
+  border-bottom-color: var(--blue);
+  color: var(--navy);
+}
+
+.numeral-tab span {
+  border-radius: 999px;
+  background: var(--sky);
+  color: var(--navy);
+  font-size: 0.8rem;
+  padding: 2px 8px;
+}
+
+.numeral-tab-panel {
+  min-height: 80px;
+}
+
 .catalog-card h2 {
   margin: 0 0 10px;
   color: var(--navy);
@@ -1160,48 +1038,5 @@ textarea {
 
   .pagination-actions .button {
     flex: 1;
-  }
-}
-
-@media (min-width: 769px) and (max-width: 920px) {
-  .site-header-admin .header-inner {
-    flex-wrap: nowrap;
-    justify-content: space-between;
-    gap: 16px;
-    padding-block: 0;
-  }
-
-  .site-header-admin .brand {
-    font-size: 1.5rem;
-  }
-
-  .site-header-admin .main-nav {
-    order: 0;
-    width: auto;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    gap: 12px;
-    font-size: 0.9rem;
-  }
-
-  .site-header-admin .main-nav a {
-    padding: 0;
-  }
-}
-
-@media (max-width: 768px) {
-  .site-header-admin .header-inner {
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: flex-start;
-    padding-block: 0;
-  }
-
-  .site-header-admin .main-nav {
-    order: 0;
-    width: 100%;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    gap: 10px 15px;
   }
 }
