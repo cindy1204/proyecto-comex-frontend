@@ -1,0 +1,83 @@
+'use client';
+
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { useCallback } from 'react';
+import { Alert } from '../../common/components/alert';
+import { Button } from '../../common/components/button';
+import { useTranslation } from '../../i18n/hooks/use-translation';
+import { Field } from '../../common/components/field';
+import { Input } from '../../common/components/input';
+import { ROUTES } from '../../common/config';
+import { useFormAction } from '../../common/hooks/use-form-action';
+import { toSafeInternalPath } from '../../common/utils/safe-path';
+import { useSession } from '../hooks/use-session';
+import { AuthCard } from './auth-card';
+import { GuestGuard } from './guest-guard';
+
+export function LoginForm() {
+  const searchParams = useSearchParams();
+  const returnTo = toSafeInternalPath(searchParams.get('returnTo'));
+  const sessionExpired = searchParams.get('expirada') === '1';
+  const { login } = useSession();
+  const { t } = useTranslation();
+
+  const action = useCallback(
+    (values: FormData) =>
+      login({
+        email: String(values.get('email') ?? '').trim(),
+        password: String(values.get('password') ?? ''),
+      }),
+    [login],
+  );
+  const { handleSubmit, isSubmitting, error, fieldErrors } = useFormAction(action);
+
+  const registerHref = `${ROUTES.register}?returnTo=${encodeURIComponent(returnTo)}`;
+
+  return (
+    <GuestGuard redirectTo={returnTo}>
+      <AuthCard
+        description={t('auth.login.description')}
+        eyebrow={t('auth.login.eyebrow')}
+        footer={
+          <>
+            {t('auth.login.noAccount')}{' '}
+            <Link
+              className="inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-2 hover:text-primary-hover"
+              href={registerHref}
+            >
+              {t('auth.login.registerLink')}
+            </Link>
+          </>
+        }
+        title={t('auth.login.title')}
+      >
+        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+          {sessionExpired && !error && (
+            <Alert tone="warning">{t('auth.login.sessionExpired')}</Alert>
+          )}
+          {error && <Alert>{error}</Alert>}
+          <Field error={fieldErrors.email} label={t('auth.fields.email')} required>
+            {(control) => (
+              <Input {...control} autoComplete="email" maxLength={254} name="email" type="email" />
+            )}
+          </Field>
+          <Field error={fieldErrors.password} label={t('auth.fields.password')} required>
+            {(control) => (
+              <Input
+                {...control}
+                autoComplete="current-password"
+                maxLength={128}
+                name="password"
+                type="password"
+              />
+            )}
+          </Field>
+          <Button fullWidth isLoading={isSubmitting} type="submit">
+            {isSubmitting ? t('auth.login.submitting') : t('auth.login.submit')}
+          </Button>
+        </form>
+      </AuthCard>
+    </GuestGuard>
+  );
+}
