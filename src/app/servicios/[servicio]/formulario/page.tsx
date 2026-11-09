@@ -1,55 +1,59 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { Suspense } from 'react';
-import { ProtectedContent } from '@/features/auth/protected-content';
-import { ServiceRequestForm } from '@/features/services/service-request-form';
-import { services } from '@/features/services/service-data';
+import { Card } from '@/features/common/components/card';
+import { Container } from '@/features/common/components/container';
+import { PageHeader } from '@/features/common/components/page-header';
+import { AuthGuard } from '@/features/dashboard/components/auth-guard';
+import { RequestBoundary } from '@/features/i18n/components/request-boundary';
+import { getTranslations } from '@/features/i18n/services/get-translations';
+import { ServiceRequestForm } from '@/features/services/components/service-request-form';
+import { GENERIC_FORM_SERVICES, findService } from '@/features/services/domain/services';
+
+type ServiceParams = Promise<{ servicio: string }>;
 
 export function generateStaticParams() {
-  return services
-    .filter(({ slug }) => !['importaciones', 'exportaciones'].includes(slug))
-    .map(({ slug }) => ({ servicio: slug }));
+  return GENERIC_FORM_SERVICES.map(({ slug }) => ({ servicio: slug }));
 }
 
-export async function generateMetadata(
-  { params }: { params: Promise<{ servicio: string }> },
-): Promise<Metadata> {
-  const { servicio: slug } = await params;
-  const service = services.find((item) => item.slug === slug);
-  return { title: service ? `Formulario de ${service.title.toLowerCase()}` : 'Formulario de servicio' };
+export async function generateMetadata({ params }: { params: ServiceParams }): Promise<Metadata> {
+  const { servicio } = await params;
+  const service = findService(servicio);
+  const { t } = await getTranslations();
+  return {
+    title: service
+      ? t('services.form.metaTitle', {
+          service: t(`services.items.${service.slug}.title`).toLowerCase(),
+        })
+      : t('services.form.fallbackTitle'),
+  };
 }
 
-export default function ServiceFormPage(
-  { params }: { params: Promise<{ servicio: string }> },
-) {
+async function ServiceFormContent({ params }: { params: ServiceParams }) {
+  const { servicio } = await params;
+  const service = findService(servicio);
+  if (!service?.usesGenericForm) notFound();
+  const { t } = await getTranslations();
+
   return (
-    <Suspense fallback={<p className="notice">Cargando formulario…</p>}>
-      <ServiceFormPageContent params={params} />
-    </Suspense>
+    <AuthGuard>
+      <Container className="py-10" size="narrow">
+        <PageHeader
+          description={t('services.form.description')}
+          eyebrow={t(`services.items.${service.slug}.title`)}
+          title={t('services.form.title')}
+        />
+        <Card>
+          <ServiceRequestForm service={service} />
+        </Card>
+      </Container>
+    </AuthGuard>
   );
 }
 
-async function ServiceFormPageContent(
-  { params }: { params: Promise<{ servicio: string }> },
-) {
-  const { servicio: slug } = await params;
-  const service = services.find((item) => item.slug === slug);
-  if (!service || ['importaciones', 'exportaciones'].includes(service.slug)) notFound();
-
+export default function ServiceFormPage({ params }: { params: ServiceParams }) {
   return (
-    <section className="section section-muted">
-      <div className="section-container">
-        <header className="page-heading">
-          <p className="eyebrow">{service.title}</p>
-          <h1>Formulario de operación</h1>
-          <p>Cuéntanos los datos principales para registrar tu solicitud y orientarte sobre los siguientes pasos.</p>
-        </header>
-        <div className="form-card">
-          <ProtectedContent returnTo={`/servicios/${service.slug}/formulario`}>
-            <ServiceRequestForm service={service} />
-          </ProtectedContent>
-        </div>
-      </div>
-    </section>
+    <RequestBoundary>
+      <ServiceFormContent params={params} />
+    </RequestBoundary>
   );
 }

@@ -1,22 +1,40 @@
 import type { Metadata } from 'next';
-import { ProtectedContent } from '@/features/auth/protected-content';
-import { InteractionForm } from '@/features/interactions/interaction-form';
+import { Card } from '@/features/common/components/card';
+import { Container } from '@/features/common/components/container';
+import { PageHeader } from '@/features/common/components/page-header';
+import { AuthGuard } from '@/features/dashboard/components/auth-guard';
+import { InteractionForm } from '@/features/interactions/components/interaction-form';
+import { RequestBoundary } from '@/features/i18n/components/request-boundary';
+import { getTranslations } from '@/features/i18n/services/get-translations';
 
-export const metadata: Metadata = { title: 'Formulario de importaciones' };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getTranslations();
+  return { title: t('meta.imports') };
+}
+
+async function ImportationsPageContent() {
+  const { t } = await getTranslations();
+
+  return (
+    <AuthGuard>
+      <Container className="py-10">
+        <PageHeader
+          description={t('interactions.pages.imports.description')}
+          eyebrow={t('interactions.pages.imports.eyebrow')}
+          title={t('interactions.pages.imports.title')}
+        />
+        <Card>
+          <InteractionForm type="formulario-importaciones" />
+        </Card>
+      </Container>
+    </AuthGuard>
+  );
+}
 
 export default function ImportationsPage() {
   return (
-    <section className="section section-muted">
-      <div className="section-container">
-        <header className="page-heading">
-          <p className="eyebrow">Importaciones de bienes · Anexo 3 · DCIP-83</p>
-          <h1>Formulario de importaciones</h1>
-          <p>Registra la información principal de la operación. Selecciona un numeral activo del catálogo para guardar tu solicitud.</p>
-        </header>
-        <div className="form-card">
-          <ProtectedContent returnTo="/importaciones"><InteractionForm type="formulario-importaciones" /></ProtectedContent>
-        </div>
-      </div>
-    </section>
+    <RequestBoundary>
+      <ImportationsPageContent />
+    </RequestBoundary>
   );
 }

@@ -1,61 +1,70 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Suspense } from 'react';
-import { ServiceNumerals } from '@/features/services/service-numerals';
-import { services } from '@/features/services/service-data';
+import { buttonStyles } from '@/features/common/components/button';
+import { Container } from '@/features/common/components/container';
+import { PageHeader } from '@/features/common/components/page-header';
+import { ROUTES } from '@/features/common/config';
+import { ServiceNumerals } from '@/features/services/components/service-numerals';
+import { RequestBoundary } from '@/features/i18n/components/request-boundary';
+import { getTranslations } from '@/features/i18n/services/get-translations';
+import { SERVICES, findService } from '@/features/services/domain/services';
+
+type ServiceParams = Promise<{ servicio: string }>;
 
 export function generateStaticParams() {
-  return services.map(({ slug }) => ({ servicio: slug }));
+  return SERVICES.map(({ slug }) => ({ servicio: slug }));
 }
 
-export async function generateMetadata(
-  { params }: { params: Promise<{ servicio: string }> },
-): Promise<Metadata> {
-  const { servicio: slug } = await params;
-  const service = services.find((item) => item.slug === slug);
-  return { title: service?.title ?? 'Servicio' };
+export async function generateMetadata({ params }: { params: ServiceParams }): Promise<Metadata> {
+  const { servicio } = await params;
+  const { t } = await getTranslations();
+  const service = findService(servicio);
+  return {
+    title: service ? t(`services.items.${service.slug}.title`) : t('services.fallbackTitle'),
+  };
 }
 
-export default function ServicePage(
-  { params }: { params: Promise<{ servicio: string }> },
-) {
+async function ServiceContent({ params }: { params: ServiceParams }) {
+  const { servicio } = await params;
+  const service = findService(servicio);
+  if (!service) notFound();
+  const { t } = await getTranslations();
+
   return (
-    <Suspense fallback={<p className="notice">Cargando servicio…</p>}>
-      <ServicePageContent params={params} />
-    </Suspense>
+    <Container className="py-10">
+      <PageHeader
+        actions={
+          <>
+            <Link className={buttonStyles()} href={service.formHref}>
+              {t('services.fillForm')}
+            </Link>
+            <Link
+              className={buttonStyles({ variant: 'outline' })}
+              href={`${ROUTES.contact}?tipoProducto=${service.contactType}`}
+            >
+              {t('services.requestAdvice')}
+            </Link>
+          </>
+        }
+        description={t(`services.items.${service.slug}.description`)}
+        eyebrow={t('services.detail.eyebrow')}
+        title={t(`services.items.${service.slug}.title`)}
+      />
+      <section aria-labelledby="numerales" className="flex flex-col gap-4">
+        <h2 className="type-heading text-foreground" id="numerales">
+          {t('services.detail.numeralsTitle')}
+        </h2>
+        <ServiceNumerals service={service} />
+      </section>
+    </Container>
   );
 }
 
-async function ServicePageContent(
-  { params }: { params: Promise<{ servicio: string }> },
-) {
-  const { servicio: slug } = await params;
-  const service = services.find((item) => item.slug === slug);
-  if (!service) notFound();
-
+export default function ServicePage({ params }: { params: ServiceParams }) {
   return (
-    <section className="section">
-      <div className="section-container">
-        <header className="page-heading">
-          <p className="eyebrow">Servicio de comercio exterior</p>
-          <h1>{service.title}</h1>
-          <p>{service.description}</p>
-        </header>
-        <div className="hero-actions">
-          <Link className="button" href={service.formHref}>Diligenciar formulario</Link>
-          <Link className="button button-outline" href={`/contacto?tipoProducto=${service.contactType}`}>
-            Solicitar asesoría
-          </Link>
-        </div>
-        <section className="section">
-          <header className="page-heading">
-            <h2>Numerales cambiarios relacionados</h2>
-            <p>Consulta los numerales asociados a este servicio.</p>
-          </header>
-          <ServiceNumerals service={service} />
-        </section>
-      </div>
-    </section>
+    <RequestBoundary>
+      <ServiceContent params={params} />
+    </RequestBoundary>
   );
 }

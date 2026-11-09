@@ -1,24 +1,41 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { ContactForm } from '@/features/contact/contact-form';
+import { Card } from '@/features/common/components/card';
+import { Container } from '@/features/common/components/container';
+import { Loading } from '@/features/common/components/loading';
+import { PageHeader } from '@/features/common/components/page-header';
+import { ContactForm } from '@/features/contact/components/contact-form';
+import { RequestBoundary } from '@/features/i18n/components/request-boundary';
+import { getTranslations } from '@/features/i18n/services/get-translations';
 
-export const metadata: Metadata = { title: 'Contáctenos' };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getTranslations();
+  return { title: t('meta.contact') };
+}
+
+async function ContactPageContent() {
+  const { t } = await getTranslations();
+
+  return (
+    <Container className="py-10" size="narrow">
+      <PageHeader
+        description={t('contact.page.description')}
+        eyebrow={t('contact.page.eyebrow')}
+        title={t('contact.page.title')}
+      />
+      <Card>
+        <Suspense fallback={<Loading />}>
+          <ContactForm />
+        </Suspense>
+      </Card>
+    </Container>
+  );
+}
 
 export default function ContactPage() {
   return (
-    <section className="section section-muted">
-      <div className="section-container">
-        <header className="page-heading">
-          <p className="eyebrow">Asesoría personalizada</p>
-          <h1>Cuéntanos cómo podemos ayudarte</h1>
-          <p>Completa estos datos y nuestro equipo revisará tu caso.</p>
-        </header>
-        <div className="form-card">
-          <Suspense fallback={<p className="notice">Cargando formulario…</p>}>
-            <ContactForm />
-          </Suspense>
-        </div>
-      </div>
-    </section>
+    <RequestBoundary>
+      <ContactPageContent />
+    </RequestBoundary>
   );
 }

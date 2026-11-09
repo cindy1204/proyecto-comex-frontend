@@ -1,34 +1,55 @@
 import type { Metadata } from 'next';
-import { Suspense } from 'react';
-import { ProtectedContent } from '@/features/auth/protected-content';
-import { InteractionsList } from '@/features/interactions/interactions-list';
-import { ContactRequestsList } from '@/features/contact/contact-requests-list';
-import { AccountActions } from '@/features/interactions/account-actions';
+import Link from 'next/link';
+import { buttonStyles } from '@/features/common/components/button';
+import { Container } from '@/features/common/components/container';
+import { PageHeader } from '@/features/common/components/page-header';
+import { ROUTES } from '@/features/common/config';
+import { AuthGuard } from '@/features/dashboard/components/auth-guard';
+import { InteractionsList } from '@/features/interactions/components/interactions-list';
+import { RequestBoundary } from '@/features/i18n/components/request-boundary';
+import { getTranslations } from '@/features/i18n/services/get-translations';
 
-export const metadata: Metadata = { title: 'Mis solicitudes' };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getTranslations();
+  return { title: t('meta.myInteractions') };
+}
+
+async function MyInteractionsPageContent() {
+  const { t } = await getTranslations();
+
+  return (
+    <AuthGuard>
+      <Container className="py-10">
+        <PageHeader
+          actions={
+            <Link className={buttonStyles()} href={ROUTES.services}>
+              {t('interactions.pages.mine.fillForm')}
+            </Link>
+          }
+          description={t('interactions.pages.mine.description')}
+          eyebrow={t('common.yourAccount')}
+          title={t('interactions.pages.mine.title')}
+        />
+        <InteractionsList scope="mine" />
+        <p className="mt-8 text-sm text-muted-foreground">
+          {t('interactions.pages.mine.lookingForRequests')}{' '}
+          <Link
+            className="inline-flex min-h-11 items-center font-semibold text-primary underline"
+            href={ROUTES.myRequests}
+          >
+            {t('interactions.pages.mine.goToRequests')}
+          </Link>
+          .
+        </p>
+      </Container>
+    </AuthGuard>
+  );
+}
 
 export default function MyInteractionsPage() {
   return (
-    <section className="section">
-      <div className="section-container">
-        <header className="page-heading">
-          <p className="eyebrow">Tu cuenta</p>
-          <h1>Mis solicitudes</h1>
-          <p>Elige si quieres revisar tus formularios diligenciados o iniciar uno nuevo.</p>
-        </header>
-        <Suspense fallback={<p className="notice">Cargando opciones…</p>}>
-          <AccountActions />
-        </Suspense>
-        <ProtectedContent returnTo="/#servicios">
-          <div id="formularios">
-            <header className="page-heading">
-              <h2>Formularios de importación y exportación</h2>
-            </header>
-            <InteractionsList />
-            <ContactRequestsList />
-          </div>
-        </ProtectedContent>
-      </div>
-    </section>
+    <RequestBoundary>
+      <MyInteractionsPageContent />
+    </RequestBoundary>
   );
 }
