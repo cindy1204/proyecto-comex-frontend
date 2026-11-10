@@ -2,7 +2,7 @@
 
 Frontend de ColComex, una plataforma de asesoría en comercio exterior (importaciones, exportaciones, inversiones, endeudamiento externo y servicios). Permite consultar el catálogo público de numerales cambiarios, diligenciar formularios de operación, enviar solicitudes de asesoría y, para administradores, gestionar el catálogo y revisar la actividad de los usuarios.
 
-Construido con Next.js 16 (App Router), React 19, TypeScript estricto y Tailwind CSS 4. Consume la API REST de `proyecto-comex-backend` (contrato en `CONTRACT.md`).
+Construido con Next.js 16 (App Router), React 19, TypeScript estricto y Tailwind CSS 4. Consume la API REST de `proyecto-comex-backend` (contrato en el README del backend).
 
 ## Despliegue
 
@@ -173,6 +173,8 @@ Idiomas: español (`es`, por defecto) e inglés (`en`). No hay segmentos `[local
 | `/admin`, `/admin/interacciones`         | Administrador |
 
 `/admin/interacciones` abre el panel directamente en la pestaña Interacciones.
+
+La ruta de registro es `/registro` (equivale al `/register` de la rúbrica). El registro público siempre crea usuarios con rol `user`; el administrador solo existe por el seed.
 
 ## Protección de rutas
 
