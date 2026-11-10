@@ -479,6 +479,8 @@ export const en: Messages = {
     copyLabel: 'Copy of the saved request',
     summary: 'Request summary',
     print: 'Print / Save as PDF',
+    downloadForm: 'Download form',
+    pdfDownloadFailed: 'The completed form could not be downloaded.',
     numeralDescription: 'Numeral description',
     updated: 'The form for numeral {code} was updated successfully.',
     removed: 'The form for numeral {code} was removed successfully.',

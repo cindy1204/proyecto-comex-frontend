@@ -1,6 +1,6 @@
 'use client';
 
-import { Printer } from 'lucide-react';
+import { FileDown, Printer } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { Alert } from '../../common/components/alert';
 import { Button } from '../../common/components/button';
@@ -20,6 +20,7 @@ import {
 import { OPERATIONS, type InteractionType } from '../domain/interaction';
 import { createInteraction } from '../services/interaction.service';
 import { InteractionFields } from './interaction-fields';
+import { downloadFilledImportPdf } from '../import-pdf';
 
 interface Submitted {
   data: Record<string, string>;
@@ -34,6 +35,8 @@ export function InteractionForm({ type }: Readonly<{ type: InteractionType }>) {
   const [selectedCode, setSelectedCode] = useState('');
   const [netAmount, setNetAmount] = useState('0.00');
   const [submitted, setSubmitted] = useState<Submitted | null>(null);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
 
   const items = useMemo(() => catalog.data ?? [], [catalog.data]);
   const selectedItem = items.find((item) => item.code === selectedCode);
@@ -65,6 +68,21 @@ export function InteractionForm({ type }: Readonly<{ type: InteractionType }>) {
   });
 
   const canSubmit = !catalog.isLoading && !catalog.error && items.length > 0;
+
+  const downloadForm = async () => {
+    if (!submitted) return;
+    setIsDownloadingPdf(true);
+    setDownloadError(null);
+    try {
+      await downloadFilledImportPdf(submitted.data);
+    } catch (error) {
+      setDownloadError(
+        error instanceof Error ? error.message : t('interactions.pdfDownloadFailed'),
+      );
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-8">
@@ -113,10 +131,21 @@ export function InteractionForm({ type }: Readonly<{ type: InteractionType }>) {
         )}
         {error && <Alert>{error}</Alert>}
         {submitted && <Alert tone="success">{t('interactions.saved')}</Alert>}
-        <div>
+        {downloadError && <Alert>{downloadError}</Alert>}
+        <div className="flex flex-wrap gap-3">
           <Button disabled={!canSubmit} isLoading={isSubmitting} type="submit">
             {isSubmitting ? t('interactions.saving') : t('interactions.save')}
           </Button>
+          {isImport && submitted && (
+            <Button
+              isLoading={isDownloadingPdf}
+              onClick={() => void downloadForm()}
+              variant="outline"
+            >
+              <FileDown aria-hidden="true" className="size-4" />
+              {t('interactions.downloadForm')}
+            </Button>
+          )}
         </div>
       </form>
 

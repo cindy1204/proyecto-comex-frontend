@@ -481,6 +481,8 @@ export const es = {
     copyLabel: 'Copia de la solicitud guardada',
     summary: 'Resumen de la solicitud',
     print: 'Imprimir / Guardar PDF',
+    downloadForm: 'Descargar formulario',
+    pdfDownloadFailed: 'No se pudo descargar el formulario diligenciado.',
     numeralDescription: 'Descripción del numeral',
     updated: 'El formulario del numeral {code} se actualizó correctamente.',
     removed: 'El formulario del numeral {code} se eliminó correctamente.',
