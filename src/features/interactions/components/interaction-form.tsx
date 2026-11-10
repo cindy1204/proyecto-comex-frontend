@@ -5,7 +5,9 @@ import { useCallback, useMemo, useState } from 'react';
 import { Alert } from '../../common/components/alert';
 import { Button } from '../../common/components/button';
 import { Card } from '../../common/components/card';
+import { translateIssues } from '../../common/domain/validation';
 import { useFormAction } from '../../common/hooks/use-form-action';
+import { validationError } from '../../common/services/api-error';
 import { useTranslation } from '../../i18n/hooks/use-translation';
 import { useCatalogByCategory } from '../../catalog/hooks/use-catalog';
 import {
@@ -13,6 +15,7 @@ import {
   calculateNetReintegro,
   readInteractionData,
   suggestedDocuments,
+  validateInteractionForm,
 } from '../domain/form-fields';
 import { OPERATIONS, type InteractionType } from '../domain/interaction';
 import { createInteraction } from '../services/interaction.service';
@@ -38,11 +41,13 @@ export function InteractionForm({ type }: Readonly<{ type: InteractionType }>) {
 
   const submit = useCallback(
     async (values: FormData) => {
+      const issues = validateInteractionForm(type, values);
+      if (issues.length > 0) throw validationError(translateIssues(issues, t));
       const data = readInteractionData(type, values);
       await createInteraction({ type, data });
       return data;
     },
-    [type],
+    [type, t],
   );
 
   const onSuccess = useCallback(
@@ -65,6 +70,7 @@ export function InteractionForm({ type }: Readonly<{ type: InteractionType }>) {
     <div className="flex flex-col gap-8">
       <form
         className="flex flex-col gap-5"
+        noValidate
         onInput={(event) => {
           if (!isImport) setNetAmount(calculateNetReintegro(new FormData(event.currentTarget)));
           if (error) clearErrors();

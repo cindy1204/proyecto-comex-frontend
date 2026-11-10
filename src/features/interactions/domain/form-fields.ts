@@ -1,5 +1,6 @@
+import type { ValidationIssue } from '../../common/domain/validation';
 import type { TranslationKey } from '../../i18n/domain/translate';
-import type { InteractionType } from './interaction';
+import { OPERATIONS, type InteractionType } from './interaction';
 
 export interface FormFieldDefinition {
   /** Nombre técnico enviado al backend; no se traduce. */
@@ -266,4 +267,36 @@ export function readInteractionData(
   if (type === 'formulario-exportaciones')
     data.reintegroNetoCalculado = calculateNetReintegro(values);
   return data;
+}
+
+const CURRENCY_PATTERN = /^[A-Za-z]{3}$/;
+
+function isNonNegativeNumber(value: string): boolean {
+  const number = Number(value);
+  return value !== '' && Number.isFinite(number) && number >= 0;
+}
+
+/**
+ * Valida el formulario de una operación con las mismas reglas que antes aplicaba el navegador:
+ * campos `required`, numéricos `>= 0`, moneda de 3 letras y numeral seleccionado.
+ */
+export function validateInteractionForm(
+  type: InteractionType,
+  values: FormData,
+): ValidationIssue[] {
+  const read = (name: string) => String(values.get(name) ?? '').trim();
+  const issues: ValidationIssue[] = [];
+  for (const { name, kind, required } of FORM_FIELDS[type]) {
+    const value = read(name);
+    if (!value) {
+      if (required) issues.push({ field: name, key: 'validation.required' });
+    } else if (kind === 'number' && !isNonNegativeNumber(value)) {
+      issues.push({ field: name, key: 'validation.numberInvalid' });
+    } else if (name === 'monedaNegociacion' && !CURRENCY_PATTERN.test(value)) {
+      issues.push({ field: name, key: 'validation.currencyInvalid' });
+    }
+  }
+  const numeralField = OPERATIONS[type].numeralField;
+  if (!read(numeralField)) issues.push({ field: numeralField, key: 'validation.required' });
+  return issues;
 }

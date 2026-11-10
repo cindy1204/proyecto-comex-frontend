@@ -1,8 +1,11 @@
 'use client';
 
 import { useCallback } from 'react';
+import { translateIssues } from '../../common/domain/validation';
 import { useFormAction, type FormAction } from '../../common/hooks/use-form-action';
-import { readInteractionData } from '../domain/form-fields';
+import { validationError } from '../../common/services/api-error';
+import { useTranslation } from '../../i18n/hooks/use-translation';
+import { readInteractionData, validateInteractionForm } from '../domain/form-fields';
 import type { Interaction } from '../domain/interaction';
 import { updateInteraction } from '../services/interaction.service';
 
@@ -11,10 +14,16 @@ export function useInteractionEditForm(
   interaction: Interaction,
   onSaved: (saved: Interaction) => void,
 ): FormAction {
+  const { t } = useTranslation();
   const action = useCallback(
-    (values: FormData) =>
-      updateInteraction(interaction.id, { data: readInteractionData(interaction.type, values) }),
-    [interaction.id, interaction.type],
+    async (values: FormData) => {
+      const issues = validateInteractionForm(interaction.type, values);
+      if (issues.length > 0) throw validationError(translateIssues(issues, t));
+      return updateInteraction(interaction.id, {
+        data: readInteractionData(interaction.type, values),
+      });
+    },
+    [interaction.id, interaction.type, t],
   );
   return useFormAction(action, { onSuccess: onSaved });
 }

@@ -13,7 +13,9 @@ import { useFormAction } from '../../common/hooks/use-form-action';
 import { useCatalogByCategory } from '../../catalog/hooks/use-catalog';
 import { DICTIONARIES } from '../../i18n/dictionaries';
 import { useTranslation } from '../../i18n/hooks/use-translation';
+import { validateContactForm, readContactForm } from '../../contact/domain/contact-form';
 import { createContactRequest } from '../../contact/services/contact.service';
+import { validationError } from '../../common/services/api-error';
 import { buildServiceRequestDescription } from '../domain/service-request';
 import type { Service } from '../domain/services';
 
@@ -27,8 +29,11 @@ export function ServiceRequestForm({ service }: Readonly<{ service: Service }>) 
   const [sent, setSent] = useState(false);
 
   const submit = useCallback(
-    (values: FormData) =>
-      createContactRequest({
+    async (values: FormData) => {
+      // Mismas reglas que el formulario de contacto (comparten endpoint y campos).
+      const details = validateContactForm(readContactForm(values, service.contactType), t);
+      if (details.length > 0) throw validationError(details);
+      return createContactRequest({
         nombreCompleto: String(values.get('nombreCompleto') ?? '').trim(),
         email: String(values.get('email') ?? '').trim(),
         empresa: readOptional(values, 'empresa'),
@@ -39,8 +44,9 @@ export function ServiceRequestForm({ service }: Readonly<{ service: Service }>) 
           values,
         ),
         montoEstimado: readOptional(values, 'montoEstimado'),
-      }),
-    [service],
+      });
+    },
+    [service, t],
   );
 
   const onSuccess = useCallback((_result: unknown, form: HTMLFormElement) => {
@@ -55,6 +61,7 @@ export function ServiceRequestForm({ service }: Readonly<{ service: Service }>) 
   return (
     <form
       className="flex flex-col gap-5"
+      noValidate
       onInput={() => {
         if (sent) setSent(false);
         if (error) clearErrors();
@@ -78,12 +85,12 @@ export function ServiceRequestForm({ service }: Readonly<{ service: Service }>) 
             <Input {...control} autoComplete="email" maxLength={254} name="email" type="email" />
           )}
         </Field>
-        <Field label={t('contact.fields.company')}>
+        <Field error={fieldErrors.empresa} label={t('contact.fields.company')}>
           {(control) => (
             <Input {...control} autoComplete="organization" maxLength={160} name="empresa" />
           )}
         </Field>
-        <Field label={t('contact.fields.phone')}>
+        <Field error={fieldErrors.telefono} label={t('contact.fields.phone')}>
           {(control) => (
             <Input {...control} autoComplete="tel" maxLength={40} name="telefono" type="tel" />
           )}

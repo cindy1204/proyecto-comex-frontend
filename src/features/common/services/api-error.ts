@@ -63,6 +63,11 @@ export class ApiError extends Error {
   }
 }
 
+/** Error de validación del cliente: se muestra por campo igual que los `details` del backend. */
+export function validationError(details: FieldError[]): ApiError {
+  return new ApiError({ status: 400, code: 'VALIDATION_ERROR', message: '', details });
+}
+
 export function networkError(): ApiError {
   return new ApiError({
     status: 0,

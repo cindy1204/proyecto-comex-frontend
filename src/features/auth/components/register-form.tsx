@@ -10,13 +10,13 @@ import { Field } from '../../common/components/field';
 import { Input } from '../../common/components/input';
 import { ROUTES } from '../../common/config';
 import { useFormAction } from '../../common/hooks/use-form-action';
-import { ApiError } from '../../common/services/api-error';
+import { translateIssues } from '../../common/domain/validation';
+import { validationError } from '../../common/services/api-error';
 import { toOptionalSafePath } from '../../common/utils/safe-path';
+import { PASSWORD_MIN_LENGTH, validateRegister } from '../domain/auth-form';
 import { useSession } from '../hooks/use-session';
 import { AuthCard } from './auth-card';
 import { GuestGuard } from './guest-guard';
-
-const PASSWORD_MIN_LENGTH = 8;
 
 export function RegisterForm() {
   const searchParams = useSearchParams();
@@ -25,21 +25,18 @@ export function RegisterForm() {
   const { t } = useTranslation();
 
   const action = useCallback(
-    (values: FormData) => {
-      const password = String(values.get('password') ?? '');
-      if (password !== String(values.get('confirmPassword') ?? '')) {
-        throw new ApiError({
-          status: 400,
-          code: 'VALIDATION_ERROR',
-          message: t('errors.validation'),
-          details: [{ field: 'confirmPassword', message: t('auth.register.passwordMismatch') }],
-        });
-      }
-      return register({
+    async (values: FormData) => {
+      const payload = {
         name: String(values.get('name') ?? '').trim(),
         email: String(values.get('email') ?? '').trim(),
-        password,
+        password: String(values.get('password') ?? ''),
+      };
+      const issues = validateRegister({
+        ...payload,
+        confirmPassword: String(values.get('confirmPassword') ?? ''),
       });
+      if (issues.length > 0) throw validationError(translateIssues(issues, t));
+      return register(payload);
     },
     [register, t],
   );
@@ -67,7 +64,7 @@ export function RegisterForm() {
         }
         title={t('auth.register.title')}
       >
-        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+        <form className="flex flex-col gap-4" noValidate onSubmit={handleSubmit}>
           {error && <Alert>{error}</Alert>}
           <Field error={fieldErrors.name} label={t('auth.fields.name')} required>
             {(control) => (

@@ -10,7 +10,10 @@ import { Field } from '../../common/components/field';
 import { Input } from '../../common/components/input';
 import { ROUTES } from '../../common/config';
 import { useFormAction } from '../../common/hooks/use-form-action';
+import { translateIssues } from '../../common/domain/validation';
+import { validationError } from '../../common/services/api-error';
 import { toOptionalSafePath } from '../../common/utils/safe-path';
+import { validateLogin } from '../domain/auth-form';
 import { useSession } from '../hooks/use-session';
 import { AuthCard } from './auth-card';
 import { GuestGuard } from './guest-guard';
@@ -23,12 +26,16 @@ export function LoginForm() {
   const { t } = useTranslation();
 
   const action = useCallback(
-    (values: FormData) =>
-      login({
+    async (values: FormData) => {
+      const credentials = {
         email: String(values.get('email') ?? '').trim(),
         password: String(values.get('password') ?? ''),
-      }),
-    [login],
+      };
+      const issues = validateLogin(credentials);
+      if (issues.length > 0) throw validationError(translateIssues(issues, t));
+      return login(credentials);
+    },
+    [login, t],
   );
   const { handleSubmit, isSubmitting, error, fieldErrors } = useFormAction(action);
 
@@ -54,7 +61,7 @@ export function LoginForm() {
         }
         title={t('auth.login.title')}
       >
-        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+        <form className="flex flex-col gap-4" noValidate onSubmit={handleSubmit}>
           {sessionExpired && !error && (
             <Alert tone="warning">{t('auth.login.sessionExpired')}</Alert>
           )}

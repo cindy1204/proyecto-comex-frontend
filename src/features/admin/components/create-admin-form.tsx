@@ -6,23 +6,28 @@ import { Alert } from '../../common/components/alert';
 import { Button } from '../../common/components/button';
 import { Field } from '../../common/components/field';
 import { Input } from '../../common/components/input';
+import { translateIssues } from '../../common/domain/validation';
 import { useFormAction } from '../../common/hooks/use-form-action';
+import { validationError } from '../../common/services/api-error';
 import { useTranslation } from '../../i18n/hooks/use-translation';
-
-const ADMIN_PASSWORD_MIN_LENGTH = 12;
+import { ADMIN_PASSWORD_MIN_LENGTH, validateCreateAdmin } from '../domain/admin-form';
 
 export function CreateAdminForm() {
   const { t } = useTranslation();
   const [createdName, setCreatedName] = useState<string | null>(null);
 
   const submit = useCallback(
-    (values: FormData) =>
-      createAdmin({
+    async (values: FormData) => {
+      const payload = {
         name: String(values.get('name') ?? '').trim(),
         email: String(values.get('email') ?? '').trim(),
         password: String(values.get('password') ?? ''),
-      }),
-    [],
+      };
+      const issues = validateCreateAdmin(payload);
+      if (issues.length > 0) throw validationError(translateIssues(issues, t));
+      return createAdmin(payload);
+    },
+    [t],
   );
 
   const onSuccess = useCallback((user: { name: string }, form: HTMLFormElement) => {
@@ -37,6 +42,7 @@ export function CreateAdminForm() {
   return (
     <form
       className="flex flex-col gap-5"
+      noValidate
       onInput={() => {
         setCreatedName(null);
         if (error) clearErrors();

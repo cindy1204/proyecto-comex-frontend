@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { useTranslation } from '../../i18n/hooks/use-translation';
 import type { FieldErrors } from '../domain/api-error';
 import { ApiError, getErrorMessage } from '../services/api-error';
@@ -21,7 +21,8 @@ export interface FormAction {
 
 /**
  * Envoltorio de formularios no controlados: lee `FormData`, ejecuta la acción (un servicio) y
- * traduce `ApiError` a mensaje general + errores por campo.
+ * traduce `ApiError` a mensaje general + errores por campo. Si hay errores por campo, mueve el foco
+ * al primer control marcado `aria-invalid` (los archivos se omiten: su `<input>` está oculto).
  */
 export function useFormAction<TResult>(
   action: (values: FormData) => Promise<TResult>,
@@ -32,6 +33,16 @@ export function useFormAction<TResult>(
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [focusRequest, setFocusRequest] = useState(0);
+  const formRef = useRef<HTMLFormElement | null>(null);
+
+  // Tras pintar los errores (los controles ya tienen `aria-invalid`), enfoca el primero.
+  useEffect(() => {
+    if (focusRequest === 0) return;
+    formRef.current
+      ?.querySelector<HTMLElement>('[aria-invalid="true"]:not([type="file"])')
+      ?.focus();
+  }, [focusRequest]);
 
   const clearErrors = useCallback(() => {
     setError(null);
@@ -49,7 +60,12 @@ export function useFormAction<TResult>(
         onSuccess?.(result, form);
       } catch (caught) {
         setError(getErrorMessage(caught, t));
-        setFieldErrors(caught instanceof ApiError ? caught.fieldErrors : {});
+        const details = caught instanceof ApiError ? caught.fieldErrors : {};
+        setFieldErrors(details);
+        if (Object.keys(details).length > 0) {
+          formRef.current = form;
+          setFocusRequest((count) => count + 1);
+        }
       } finally {
         setIsSubmitting(false);
       }
