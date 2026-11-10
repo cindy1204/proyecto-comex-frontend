@@ -28,6 +28,7 @@ Para producción: `npm run build && npm run start`.
 | Script                            | Función                             |
 | --------------------------------- | ----------------------------------- |
 | `npm run typecheck`               | `tsc --noEmit`                      |
+| `npm test` / `test:watch`         | Vitest (pruebas unitarias)          |
 | `npm run lint` / `lint:fix`       | ESLint (Next, TypeScript, jsx-a11y) |
 | `npm run format` / `format:check` | Prettier                            |
 | `npm run build` / `start`         | Compilación y servidor productivo   |
@@ -39,6 +40,29 @@ Para producción: `npm run build && npm run start`.
 | `NEXT_PUBLIC_API_HOST` | Sí, en producción | Origen del backend **sin** el sufijo `/api` (el cliente lo antepone). En desarrollo, si falta, se usa `http://localhost:3001`. |
 
 Es una variable `NEXT_PUBLIC_*`: se incrusta al compilar, así que debe definirse antes de `npm run build`. No se versiona ningún `.env` real; solo `.env.example`.
+
+## Pruebas
+
+Las pruebas usan [Vitest](https://vitest.dev) (misma versión que el backend), entorno `node`, y viven en `tests/unit/*.test.ts`. El alias `@` apunta a `src`, como en `tsconfig.json`. La configuración está en `vitest.config.mts`. Los archivos de `tests/` no forman parte del bundle de Next: `next build` solo compila lo que importan las rutas de `src/app`.
+
+```bash
+npm test             # una pasada (vitest run)
+npm run test:watch   # modo interactivo
+```
+
+Cubren únicamente lógica de dominio pura (sin DOM ni red); no hay pruebas de componentes ni de extremo a extremo.
+
+| Archivo                | Qué verifica                                                                                                                      |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `routes.test.ts`       | `isPrivatePath`, `isAdminPath`, `isGuestOnlyPath` (prefijos parecidos, barra final) y `resolvePostAuthPath` por rol y `returnTo`. |
+| `safe-path.test.ts`    | Rechazo de redirecciones abiertas (`//evil.com`, `/\evil`, URLs absolutas) en `toSafeInternalPath` y `toOptionalSafePath`.        |
+| `jwt.test.ts`          | `isJwtExpired` con reloj inyectado (vigente, vencido, sin `exp`, malformado) y decodificación UTF-8 del payload.                  |
+| `id.test.ts`           | `isCuid`: longitudes límite, mayúsculas y símbolos.                                                                               |
+| `menu.test.ts`         | Ítems del menú que ve el visitante, el usuario y el administrador; etiquetas existentes en ambos idiomas.                         |
+| `catalog-form.test.ts` | `validateCatalogInput`: campos obligatorios, límites de longitud, dirección e imagen (formato y tamaño); `readCatalogForm`.       |
+| `locale.test.ts`       | `parseAcceptLanguage` (pesos `q`, regiones) y `resolveLocale` (cookie, cabecera, valor por defecto).                              |
+| `translate.test.ts`    | `createTranslator`: claves anidadas, interpolación, plurales y clave inexistente.                                                 |
+| `dictionaries.test.ts` | `es.ts` y `en.ts` tienen exactamente las mismas claves, los mismos parámetros `{nombre}` y variantes plurales completas.          |
 
 ## Credenciales de prueba
 
@@ -182,4 +206,4 @@ Un `401` de la API cierra la sesión y los guards redirigen al login con `return
 - El layout raíz lee la cookie de idioma, por lo que todas las rutas se renderizan por petición (`export const instant = false` en `app/layout.tsx` evita que esa lectura bloquee el build con `cacheComponents: true`). En ese modo Next no puede cambiar a 404 el estado HTTP desde `notFound()`, así que `proxy.ts` responde 404 (reescribiendo a una ruta inexistente, que muestra la página 404 traducida) para un servicio desconocido (`/servicios/xyz`) y para un id de catálogo con formato inválido. `/nada` y las demás rutas sin coincidencia devuelven 404 de forma nativa.
 - `/catalogo/[id]` valida el formato del identificador antes de consultar el backend: un id con formato inválido responde 404 (lo resuelve `proxy.ts`); uno válido pero inexistente muestra la página de "no encontrado" (`notFound()`) con `noindex` y estado 200.
 - El detalle público consulta al backend sin credenciales, por lo que no muestra numerales eliminados (ni siquiera a un administrador).
-- No hay runner de pruebas automatizadas configurado; `npm run i18n:check`, `typecheck`, `lint` y `build` son las comprobaciones automáticas.
+- Comprobaciones automáticas: `npm run i18n:check`, `typecheck`, `lint`, `test` y `build`.
