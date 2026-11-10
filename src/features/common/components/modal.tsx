@@ -11,13 +11,25 @@ interface ModalProps {
   onClose: () => void;
   children: ReactNode;
   className?: string;
+  /**
+   * Cierra al pulsar el fondo (por defecto `true`). Desactívalo en modales con formularios
+   * editables para no perder datos por un clic accidental; Escape y el botón cerrar siguen activos.
+   */
+  dismissOnBackdrop?: boolean;
 }
 
 /**
  * Diálogo modal sobre `<dialog>`: el navegador atrapa el foco, inertiza el fondo, cierra con
- * Escape y devuelve el foco al elemento que lo abrió. También cierra al pulsar el fondo.
+ * Escape y devuelve el foco al elemento que lo abrió. También cierra al pulsar el fondo (salvo `dismissOnBackdrop={false}`).
  */
-export function Modal({ open, title, onClose, children, className }: Readonly<ModalProps>) {
+export function Modal({
+  open,
+  title,
+  onClose,
+  children,
+  className,
+  dismissOnBackdrop = true,
+}: Readonly<ModalProps>) {
   const { t } = useTranslation();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -51,7 +63,7 @@ export function Modal({ open, title, onClose, children, className }: Readonly<Mo
         onClose();
       }}
       onClick={(event) => {
-        if (event.target === event.currentTarget) onClose();
+        if (dismissOnBackdrop && event.target === event.currentTarget) onClose();
       }}
       ref={dialogRef}
     >

@@ -232,6 +232,7 @@ export function ContactRequestsList({ scope }: Readonly<ContactRequestsListProps
 
       <Modal
         className="max-w-2xl"
+        dismissOnBackdrop={dialog.mode !== 'edit'}
         onClose={() => setDialog({ mode: 'closed' })}
         open={dialog.mode !== 'closed'}
         title={dialog.mode === 'edit' ? t('contact.list.editTitle') : t('contact.list.detailTitle')}

@@ -235,6 +235,7 @@ export function InteractionsList({ scope }: Readonly<InteractionsListProps>) {
 
       <Modal
         className="max-w-2xl"
+        dismissOnBackdrop={dialog.mode !== 'edit'}
         onClose={() => setDialog({ mode: 'closed' })}
         open={dialog.mode !== 'closed'}
         title={

@@ -34,6 +34,7 @@ export function InteractionEditForm({
   return (
     <form
       className="flex flex-col gap-5"
+      noValidate
       onInput={() => {
         if (error) clearErrors();
       }}

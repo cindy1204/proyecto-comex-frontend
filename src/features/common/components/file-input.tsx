@@ -1,7 +1,7 @@
 'use client';
 
 import { ImagePlus, X } from 'lucide-react';
-import { useEffect, useRef, useState, type ChangeEvent } from 'react';
+import { useEffect, useId, useRef, useState, type ChangeEvent } from 'react';
 import { useTranslation } from '../../i18n/hooks/use-translation';
 import { Button } from './button';
 
@@ -30,9 +30,10 @@ export function FileInput({
   invalid,
   required,
   onFileChange,
-  ...aria
+  'aria-describedby': describedBy,
 }: Readonly<FileInputProps>) {
   const { t } = useTranslation();
+  const errorId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const previewRef = useRef<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -82,11 +83,14 @@ export function FileInput({
   }
 
   const shownImage = preview ?? currentImageUrl;
+  const inputDescribedBy = [localError ? errorId : null, describedBy].filter(Boolean).join(' ');
 
   return (
     <div className="flex flex-col gap-3">
+      {/* El `<input>` es solo el motor del selector: el Button visible es el único control con foco. */}
       <input
         accept={accept.join(',')}
+        aria-describedby={inputDescribedBy || undefined}
         aria-invalid={invalid || Boolean(localError) || undefined}
         className="sr-only"
         id={id}
@@ -94,11 +98,16 @@ export function FileInput({
         onChange={handleChange}
         ref={inputRef}
         required={required}
+        tabIndex={-1}
         type="file"
-        {...aria}
       />
       <div className="flex flex-wrap items-center gap-3">
-        <Button onClick={() => inputRef.current?.click()} size="sm" variant="outline">
+        <Button
+          aria-describedby={inputDescribedBy || undefined}
+          onClick={() => inputRef.current?.click()}
+          size="sm"
+          variant="outline"
+        >
           <ImagePlus aria-hidden="true" className="size-4" />
           {shownImage ? t('common.fileInput.change') : t('common.fileInput.select')}
         </Button>
@@ -107,7 +116,7 @@ export function FileInput({
             {fileName}
             <button
               aria-label={t('common.fileInput.remove')}
-              className="rounded p-1 hover:bg-surface-muted"
+              className="grid min-h-11 min-w-11 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-surface-muted hover:text-foreground"
               onClick={clear}
               type="button"
             >
@@ -117,7 +126,7 @@ export function FileInput({
         )}
       </div>
       {localError && (
-        <p className="text-sm font-medium text-danger" role="alert">
+        <p className="text-sm font-medium text-danger" id={errorId} role="alert">
           {localError === 'format'
             ? t('common.fileInput.errorFormat')
             : t('common.fileInput.errorSize', { max: maxSizeMb })}

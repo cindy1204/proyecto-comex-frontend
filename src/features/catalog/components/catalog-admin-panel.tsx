@@ -300,6 +300,7 @@ export function CatalogAdminPanel() {
 
       <Modal
         className="max-w-2xl"
+        dismissOnBackdrop={false}
         onClose={() => setForm({ mode: 'closed' })}
         open={form.mode !== 'closed'}
         title={
