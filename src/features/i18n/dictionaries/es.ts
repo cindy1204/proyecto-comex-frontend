@@ -119,6 +119,18 @@ export const es = {
     alertTitle: 'No pudimos cargar esta página',
     description: 'Ocurrió un error inesperado. Puedes intentarlo de nuevo o volver al inicio.',
   },
+  validation: {
+    required: 'Este campo es obligatorio.',
+    emailRequired: 'El correo es obligatorio.',
+    emailInvalid: 'Ingresa un correo electrónico válido.',
+    passwordRequired: 'La contraseña es obligatoria.',
+    passwordMinLength: 'La contraseña debe tener al menos {min} caracteres.',
+    confirmPasswordRequired: 'Confirma tu contraseña.',
+    nameRequired: 'El nombre es obligatorio.',
+    nameMinLength: 'El nombre requiere al menos {min} caracteres.',
+    numberInvalid: 'Ingresa un número mayor o igual a 0.',
+    currencyInvalid: 'Usa un código de 3 letras, por ejemplo USD.',
+  },
   notFound: {
     eyebrow: 'Error 404',
     title: 'No encontramos esta página',
@@ -126,6 +138,7 @@ export const es = {
     viewCatalog: 'Ver el catálogo',
   },
   home: {
+    forbidden: 'No tienes permiso para abrir esa sección.',
     hero: {
       eyebrow: 'Comercio exterior con claridad',
       title: 'Tu aliado para operar en mercados internacionales',

@@ -117,6 +117,18 @@ export const en: Messages = {
     alertTitle: 'We could not load this page',
     description: 'An unexpected error occurred. You can try again or go back to the home page.',
   },
+  validation: {
+    required: 'This field is required.',
+    emailRequired: 'Email is required.',
+    emailInvalid: 'Enter a valid email address.',
+    passwordRequired: 'Password is required.',
+    passwordMinLength: 'Password must be at least {min} characters long.',
+    confirmPasswordRequired: 'Confirm your password.',
+    nameRequired: 'Name is required.',
+    nameMinLength: 'Name must be at least {min} characters long.',
+    numberInvalid: 'Enter a number greater than or equal to 0.',
+    currencyInvalid: 'Use a 3-letter code, for example USD.',
+  },
   notFound: {
     eyebrow: 'Error 404',
     title: 'We could not find this page',
@@ -124,6 +136,7 @@ export const en: Messages = {
     viewCatalog: 'View the catalog',
   },
   home: {
+    forbidden: 'You do not have permission to open that section.',
     hero: {
       eyebrow: 'Foreign trade made clear',
       title: 'Your partner for operating in international markets',
