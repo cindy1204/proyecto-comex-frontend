@@ -47,9 +47,6 @@ export interface CatalogInput {
   image: File | null;
 }
 
-/** Valores técnicos de estado; su etiqueta se traduce con `catalog.states.<valor>`. */
-export const CATALOG_STATES: readonly CatalogState[] = ['ACTIVE', 'REMOVED'];
-
 /** Filtros de estado del admin; etiqueta en `catalog.stateFilters.<valor>`. */
 export const CATALOG_STATE_FILTERS: readonly CatalogStateFilter[] = ['ACTIVE', 'REMOVED', 'ALL'];
 

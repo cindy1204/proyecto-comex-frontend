@@ -41,11 +41,6 @@ export function formatDataValue(value: unknown): string {
   return typeof value === 'string' ? value : JSON.stringify(value);
 }
 
-export const INTERACTION_TYPES: readonly InteractionType[] = [
-  'formulario-importaciones',
-  'formulario-exportaciones',
-];
-
 /** Etiqueta legible del tipo técnico (el valor enviado al backend no cambia). */
 export function interactionLabel(type: InteractionType, t: TranslateFunction): string {
   return t(`interactions.types.${type}`);

@@ -18,10 +18,3 @@ export interface PageQuery {
   page: number;
   limit: number;
 }
-
-export const EMPTY_PAGINATION: Pagination = {
-  total: 0,
-  currentPage: 1,
-  limit: 10,
-  totalPages: 0,
-};
