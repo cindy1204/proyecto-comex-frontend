@@ -1,79 +1,185 @@
 # ColComex Web
 
-Frontend de ColComex con Next.js App Router, React, TypeScript y Tailwind CSS. La aplicación consume el backend REST de [proyecto-comex-backend](https://github.com/cindy1204/proyecto-comex-backend).
+Frontend de ColComex, una plataforma de asesoría en comercio exterior (importaciones, exportaciones, inversiones, endeudamiento externo y servicios). Permite consultar el catálogo público de numerales cambiarios, diligenciar formularios de operación, enviar solicitudes de asesoría y, para administradores, gestionar el catálogo y revisar la actividad de los usuarios.
 
-## Requisitos
-
-- Node.js 20.9 o superior y npm.
-- El backend [proyecto-comex-backend](https://github.com/cindy1204/proyecto-comex-backend) configurado y ejecutándose en `http://localhost:3001`.
-
-## Desarrollo local
-
-1. Instala las dependencias desde este directorio:
-
-   ```powershell
-   npm install
-   ```
-
-2. Copia `.env.example` a `.env.local` y ajusta `NEXT_PUBLIC_API_HOST` si la API usa otra dirección.
-3. Inicia el servidor de desarrollo:
-
-   ```powershell
-   npm run dev
-   ```
-
-   Abre `http://localhost:3000`.
-
-## Organización
-
-- `src/app`: páginas y rutas del App Router.
-- `src/features/auth`: inicio de sesión, registro, contexto de usuario y protección visual de rutas.
-- `src/features/catalog`: búsqueda, filtros y paginación del catálogo.
-- `src/features/services`: fichas de servicio, numerales relacionados y formularios generales.
-- `src/features/contact`: formulario público de contacto.
-- `src/features/interactions`: formularios autenticados de importación/exportación y consulta de solicitudes.
-- `src/lib/api.ts`: cliente HTTP compartido, manejo de respuestas y errores.
-
-## Sesión y seguridad
-
-El token se guarda en `localStorage` para conservar la sesión entre visitas y se elimina al cerrar sesión o al recibir una respuesta `401`. El frontend protege las vistas según el rol para la experiencia de usuario; la autorización real se valida nuevamente en el backend para cada endpoint.
-
-`localStorage` es accesible desde JavaScript y, por tanto, un riesgo ante vulnerabilidades XSS. No se debe almacenar información secreta en el cliente; para una aplicación pública se recomienda migrar la sesión a cookies `HttpOnly`, `Secure` y `SameSite` administradas por el servidor.
-
-Al iniciar sesión, el frontend guarda el JWT emitido por `/api/auth/login` y lo envía en el encabezado `Authorization: Bearer`. Una respuesta `401` elimina la sesión y redirige al acceso; una respuesta `403` se muestra como falta de permisos. El backend sigue siendo la autoridad y valida ambos casos en cada endpoint privado.
-
-## Rutas principales
-
-| Ruta | Acceso | Función |
-|---|---|---|
-| `/` | Público | Inicio y servicios |
-| `/servicios/:servicio` | Público | Detalle del servicio, numerales cambiarios y accesos a formulario y asesoría |
-| `/servicios/:servicio/formulario` | Cuenta autenticada | Formularios de servicios, inversiones y endeudamiento; los envíos quedan vinculados a la cuenta |
-| `/catalogo` | Público | Búsqueda y paginación del catálogo |
-| `/contacto` | Público | Formulario de contacto; si hay sesión iniciada, la solicitud queda asociada a la cuenta |
-| `/login` y `/registro` | Público | Autenticación |
-| `/admin` | Público (ingreso); administrador autenticado (panel) | Consultar solicitudes paginadas/filtrables, registrar cuentas y subir imágenes de catálogo a Supabase Storage |
-| `/importaciones` y `/exportaciones` | Cuenta autenticada | Formularios especializados; guardan la interacción ligada al usuario y numeral |
-| `/mis-interacciones` | Cuenta autenticada | Elegir entre iniciar un formulario y consultar formularios y solicitudes guardadas en la cuenta |
-| `/admin/interacciones` | Administrador | Consultar todas las interacciones |
-
-El primer administrador se configura desde el backend mediante las variables `SEED_ADMIN_*` y `npm run db:seed`. Por seguridad, el registro de administradores desde `/admin` solo está disponible para una sesión administrativa autenticada.
-
-La carga de imágenes del catálogo se realiza desde el panel de administración seleccionando un numeral y subiendo un archivo JPG, PNG o WebP (máximo 5 MB). El backend lo guarda en un bucket público de Supabase Storage y almacena en PostgreSQL la URL generada; no acepta una URL escrita en el formulario. Configura las credenciales de almacenamiento exclusivamente en el backend.
-
-Las fichas de servicio muestran los numerales de importaciones, exportaciones, inversiones, endeudamiento y servicios/transferencias que expone la API, separados en pestañas de ingresos y egresos. Los numerales de servicios/transferencias provienen del Anexo 3 del DCIP-83 aportado (actualizado al 1 de septiembre de 2021); confirma la vigencia normativa antes de usarlos para una operación real. Para diligenciar cualquier formulario, el cliente debe iniciar sesión o crear una cuenta. Los formularios de servicios se guardan como solicitudes vinculadas al usuario, y los de importaciones/exportaciones como interacciones vinculadas al usuario y al numeral; ambos tipos se consultan en Mis solicitudes. El botón de asesoría conserva su flujo de contacto público.
-
-## Validación
-
-```powershell
-npm run lint
-npm run build
-```
+Construido con Next.js 16 (App Router), React 19, TypeScript estricto y Tailwind CSS 4. Consume la API REST de `proyecto-comex-backend` (contrato en `CONTRACT.md`).
 
 ## Despliegue
 
-En Vercel, configura la raíz del proyecto como directorio y define `NEXT_PUBLIC_API_HOST` con la URL pública del backend. Configura esa URL del frontend en `CORS_ORIGINS` del backend. Nunca incluyas credenciales de base de datos o `JWT_SECRET` en las variables públicas del frontend.
+| Componente           | URL       |
+| -------------------- | --------- |
+| Frontend             | COMPLETAR |
+| Backend              | COMPLETAR |
+| Repositorio frontend | COMPLETAR |
+| Repositorio backend  | COMPLETAR |
 
-## Uso de herramientas de IA
+## Instalación y ejecución
 
-Se usó asistencia de IA para estructurar las capas del backend, preparar componentes por feature, integrar los formularios con la API y redactar documentación inicial. El código generado se ajustó tras los chequeos de TypeScript, ESLint, compilación y solicitudes HTTP locales: entre otras correcciones, se alinearon los claims del JWT, se vinculó cada interacción con su numeral y se corrigieron errores de prerenderizado y dependencias de efectos de React. La revisión manual y las verificaciones descritas en este README siguen siendo necesarias antes de un despliegue.
+Requisitos: Node.js 22 o superior y el backend en ejecución (por defecto en `http://localhost:3001`).
+
+```bash
+npm install
+cp .env.example .env.local   # ajusta NEXT_PUBLIC_API_HOST si el backend no está en localhost:3001
+npm run dev                  # http://localhost:3000
+```
+
+Para producción: `npm run build && npm run start`.
+
+| Script                            | Función                             |
+| --------------------------------- | ----------------------------------- |
+| `npm run typecheck`               | `tsc --noEmit`                      |
+| `npm run lint` / `lint:fix`       | ESLint (Next, TypeScript, jsx-a11y) |
+| `npm run format` / `format:check` | Prettier                            |
+| `npm run build` / `start`         | Compilación y servidor productivo   |
+
+### Variables de entorno
+
+| Variable               | Obligatoria       | Descripción                                                                                                                    |
+| ---------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `NEXT_PUBLIC_API_HOST` | Sí, en producción | Origen del backend **sin** el sufijo `/api` (el cliente lo antepone). En desarrollo, si falta, se usa `http://localhost:3001`. |
+
+Es una variable `NEXT_PUBLIC_*`: se incrusta al compilar, así que debe definirse antes de `npm run build`. No se versiona ningún `.env` real; solo `.env.example`.
+
+## Credenciales de prueba
+
+Usuarios creados por el seed del backend.
+
+| Rol           | Correo                 | Contraseña     |
+| ------------- | ---------------------- | -------------- |
+| Administrador | `admin@colcomex.com`   | `Admin#2026`   |
+| Usuario       | `usuario@colcomex.com` | `Usuario#2026` |
+
+## Funcionalidades
+
+- **Catálogo público** (`/catalogo`): listado paginado con filtros combinables (categoría, tipo ingreso/egreso, búsqueda con espera de escritura, rango de fechas de creación), estados de carga, vacío y error, tarjetas con imagen y respaldo cuando falta o falla. Detalle en `/catalogo/[id]` con `notFound()`.
+- **Catálogo (administración)**: tabla con filtro de estado (`Activos`, `Eliminados`, `Todos`), alta y edición en un modal con validación en cliente y errores por campo del backend, subida real de imagen (JPG, PNG o WebP de hasta 5 MB, con vista previa), eliminación lógica con confirmación y restauración.
+- **Interacciones**: el usuario crea formularios de importación y exportación, y en `/mis-interacciones` los lista, filtra por tipo y fechas, consulta, edita y elimina. El administrador ve el listado global con filtros por tipo, usuario (ID) y fechas, consulta el usuario de cada registro y puede eliminar.
+- **Solicitudes de contacto** (`/contacto`): formulario público (con sesión, la solicitud queda asociada al usuario) con monto estimado opcional en USD. En `/mis-solicitudes` el usuario las lista, edita y elimina; el administrador las revisa globalmente con filtros por servicio, búsqueda y fechas.
+- **Servicios** (`/servicios`, `/servicios/[servicio]`): contenido informativo, numerales relacionados y enlace al formulario correspondiente. Un servicio inexistente responde un 404 real (ver Notas técnicas).
+- **Panel de administración** (`/admin`): pestañas Catálogo, Interacciones, Solicitudes y Administradores (alta de nuevos administradores). Los totales de cada pestaña se leen de `pagination.total` de los propios listados (`limit=1`), sin endpoints adicionales.
+- **Experiencia común**: tablas que se convierten en tarjetas en móvil, barra de filtros con "Limpiar filtros", selector de tamaño de página, mensajes de éxito y error anunciados a lectores de pantalla (`aria-live`), botones con estado de carga que evitan envíos dobles, modo claro y oscuro.
+
+## Arquitectura
+
+`src/app` solo compone: cada `page.tsx` monta componentes de `src/features`. La lógica vive en features con capas `domain` (tipos y reglas puras), `services` (llamadas a la API), `hooks` y `components`. El flujo de dependencias es componentes → hooks → services; solo `common/services/http.ts` llama a `fetch`.
+
+```
+src/
+  proxy.ts                 protección de rutas en el servidor
+  app/                     rutas, layout, not-found, error, loading, globals.css (tokens)
+  features/
+    common/                config, utils, hooks, componentes UI reutilizables, services/http.ts
+    auth/                  sesión, login, registro
+    dashboard/             guards, reglas de acceso por ruta, menú por rol
+    layout/                header responsive, footer, marca
+    home/                  landing informativa
+    catalog/               catálogo público y administración (CRUD, imagen, restauración)
+    interactions/          formularios de importación/exportación: alta, listado, edición, borrado
+    contact/               solicitudes de contacto: formulario, listado, edición, borrado
+    services/              contenido estático de servicios y formulario genérico
+    admin/                 panel con pestañas, totales y alta de administradores
+    i18n/                  idiomas: diccionarios es/en, `t()`, proveedor, selector de idioma
+```
+
+El script `scripts/i18n-check.mjs` (`npm run i18n:check`) verifica los diccionarios; ver [Internacionalización](#internacionalización-es--en).
+
+Reglas del proyecto: sin `any`, sin `console.*`, estilos con tokens semánticos de Tailwind (`bg-surface`, `text-muted-foreground`, `border-border`, `bg-primary`…) definidos en `globals.css`, modo oscuro por clase `.dark`.
+
+### Piezas reutilizables (`features/common`)
+
+- Componentes: `DataTable` (tabla/tarjetas), `FilterBar`, `DateRangeFields`, `PageSizeSelect`, `QueryFeedback` (carga, error y vacío), `Notice`, `Tabs`, `Pagination`, `Modal`, `ConfirmDialog`, `FileInput`, `Field`, `Alert`, `Badge`, `Card`, `Button`, `Loading`, `Spinner`, `EmptyState`, `PageHeader`.
+- Hooks: `useAsyncData`, `useFormAction`, `usePagination` y `useClampPage`, `useDateRange`, `useDebounce`, `useNotice`, `useRemoveAction`.
+- Cliente HTTP: `apiRequest<T>(path, {method, body, query, signal, auth})` antepone `/api`, adjunta el Bearer, acepta JSON o `FormData`, omite parámetros vacíos y lanza `ApiError` (`status`, `code`, `message`, `fieldErrors`). Es el único punto que trata el `401`: borra la sesión y emite `SESSION_EXPIRED_EVENT`.
+
+## Internacionalización (es / en)
+
+Idiomas: español (`es`, por defecto) e inglés (`en`). No hay segmentos `[locale]`: las URLs son las mismas en ambos idiomas y `proxy.ts` no cambia su lógica de acceso. Todo vive en `src/features/i18n/`, sin librerías externas.
+
+**Cómo se resuelve el idioma** (en el servidor, en el layout raíz, para que `<html lang>` sea correcto desde el primer byte, sin parpadeo ni desajuste de hidratación):
+
+1. Cookie `locale` (`es` | `en`), que escribe el selector de idioma (1 año, `SameSite=Lax`).
+2. Cabecera `Accept-Language` (se respetan los pesos `q`; `en-US` cuenta como `en`).
+3. `es`.
+
+**Uso**
+
+- Servidor: `const { t, locale, format } = await getTranslations()` (`services/get-translations.ts`).
+- Cliente: `const { t, locale, format } = useTranslation()`, o `const { locale, setLocale, isPending } = useLocale()` para cambiar de idioma; el `I18nProvider` del layout raíz recibe el idioma ya resuelto.
+- `t('catalog.title')`, con parámetros `t('layout.greeting', { name })` (placeholder `{name}`) y plurales `t('catalog.items', { count })`, que elige `catalog.items_one` / `catalog.items_other` con `Intl.PluralRules`. Las claves están tipadas: una clave inexistente falla en `npm run typecheck`.
+- Fechas, números y moneda: `format` (`Intl` con `es-CO` / `en-US`), nunca formato manual.
+- Selector accesible **ES | EN** en el header (escritorio) y en el menú móvil: guarda la cookie, llama a `router.refresh()` y el layout vuelve a renderizar con el nuevo `<html lang>`.
+- Los dominios puros (validación de formularios, etiquetas) reciben `t` por parámetro; no importan React.
+
+**Errores de la API**: `getErrorMessage(error, t)` traduce por `error.code` (`VALIDATION_ERROR`, `UNAUTHORIZED`, credenciales inválidas, `409`, `413`, `415`, `IMAGE_STORAGE_NOT_CONFIGURED`, red y tiempo de espera), luego por estado HTTP, y si el código no se conoce usa el mensaje del backend como respaldo.
+
+**Qué no se traduce (por diseño)**
+
+- Los valores técnicos que se envían al backend (tipos de interacción, categorías, direcciones, tipos de identificación como `'Cédula de ciudadanía'`): solo cambia la etiqueta visible.
+- El contenido del catálogo que viene de la base de datos (código, título, descripción de cada numeral) sigue en español.
+- Los mensajes de error por campo (`details`) del backend, que llegan en español y se muestran tal cual.
+- El texto de la descripción que se guarda en la solicitud de servicio queda en español (es un dato persistido, no UI).
+- No se traducen los nombres de idioma del selector (`Español`, `English`).
+
+**Cómo agregar un idioma** (por ejemplo `pt`)
+
+1. `domain/locale.ts`: añadir `'pt'` a `LOCALES` y su entrada en `INTL_LOCALES` (`pt-BR`) y `LOCALE_NAMES`.
+2. Crear `dictionaries/pt.ts` con `export const pt: Messages = { ... }` (`import type { Messages } from './es'`): el compilador exige la misma forma que `es.ts`.
+3. Registrarlo en `dictionaries/index.ts` (`DICTIONARIES`).
+4. Si el idioma tiene más formas plurales que `one`/`other`, añadir las claves `_few`, `_many`… (el pluralizador usa `Intl.PluralRules`, solo hay que declararlas).
+5. `npm run typecheck && npm run i18n:check`. El selector se genera a partir de `LOCALES`.
+
+**`npm run i18n:check`** (sin dependencias, también se ejecuta dentro de `npm run lint`):
+
+- Paridad: todos los diccionarios deben tener las mismas claves, los mismos parámetros `{x}` y la pareja `_one`/`_other`.
+- Texto fijo: avisa de texto JSX y atributos (`label`, `title`, `placeholder`, `aria-label`…) que parezcan español en `src/features/**/components` y `src/app`. Se puede excluir una línea con un comentario `i18n-ignore`.
+- Límites: es una heurística (tildes, `¿¡` y palabras vacías comunes). No detecta español sin tildes ni palabras vacías (por ejemplo `{'Cargando'}`), ni texto armado en código fuera de componentes, ni verifica la calidad de la traducción. Las claves usadas en `t('…')` las valida el compilador.
+
+## Rutas
+
+| Ruta                                     | Acceso        |
+| ---------------------------------------- | ------------- |
+| `/`                                      | Público       |
+| `/catalogo`, `/catalogo/[id]`            | Público       |
+| `/servicios`, `/servicios/[servicio]`    | Público       |
+| `/contacto`                              | Público       |
+| `/login`, `/registro`                    | Solo invitado |
+| `/servicios/[servicio]/formulario`       | Autenticado   |
+| `/importaciones`, `/exportaciones`       | Autenticado   |
+| `/mis-interacciones`, `/mis-solicitudes` | Autenticado   |
+| `/admin`, `/admin/interacciones`         | Administrador |
+
+`/admin/interacciones` abre el panel directamente en la pestaña Interacciones.
+
+## Protección de rutas
+
+El JWT se guarda en `localStorage` (`colcomex-session`) y en las cookies `auth_token` y `auth_role` (no `HttpOnly`: las escribe el cliente y solo las lee el proxy para decidir redirecciones). La protección tiene tres capas; la autorización real la hace siempre el backend en cada endpoint.
+
+1. **`src/proxy.ts`** (servidor): comprueba presencia y expiración del JWT y redirige antes de renderizar.
+2. **Guards en cliente**: `AuthGuard`, `RoleGuard role="admin"` y `GuestGuard` protegen el contenido aunque se edite una cookie.
+3. **Backend**: rechaza con `401`/`403` cualquier petición sin permiso.
+
+Las reglas de acceso están en `dashboard/domain/routes.ts` y las comparten el proxy y los guards.
+
+| Caso                                     | Resultado                           |
+| ---------------------------------------- | ----------------------------------- |
+| Ruta privada sin sesión                  | `/login?returnTo=<ruta>`            |
+| Token vencido                            | `/login?returnTo=<ruta>&expirada=1` |
+| `/admin` con rol distinto de `admin`     | `/`                                 |
+| `/login` o `/registro` con sesión válida | `/`                                 |
+
+Un `401` de la API cierra la sesión y los guards redirigen al login con `returnTo`.
+
+## Reparto del trabajo
+
+| Integrante | Responsabilidad |
+| ---------- | --------------- |
+| COMPLETAR  | COMPLETAR       |
+| COMPLETAR  | COMPLETAR       |
+| COMPLETAR  | COMPLETAR       |
+
+## Notas técnicas
+
+- El layout raíz lee la cookie de idioma, por lo que todas las rutas se renderizan por petición (`export const instant = false` en `app/layout.tsx` evita que esa lectura bloquee el build con `cacheComponents: true`). En ese modo Next no puede cambiar a 404 el estado HTTP desde `notFound()`, así que `proxy.ts` responde 404 (reescribiendo a una ruta inexistente, que muestra la página 404 traducida) para un servicio desconocido (`/servicios/xyz`) y para un id de catálogo con formato inválido. `/nada` y las demás rutas sin coincidencia devuelven 404 de forma nativa.
+- `/catalogo/[id]` valida el formato del identificador antes de consultar el backend: un id con formato inválido responde 404 (lo resuelve `proxy.ts`); uno válido pero inexistente muestra la página de "no encontrado" (`notFound()`) con `noindex` y estado 200.
+- El detalle público consulta al backend sin credenciales, por lo que no muestra numerales eliminados (ni siquiera a un administrador).
+- No hay runner de pruebas automatizadas configurado; `npm run i18n:check`, `typecheck`, `lint` y `build` son las comprobaciones automáticas.
