@@ -5,7 +5,7 @@ import { useEffect, type ReactNode } from 'react';
 import { useSession } from '../../auth/hooks/use-session';
 import { useTranslation } from '../../i18n/hooks/use-translation';
 import { Loading } from '../../common/components/loading';
-import { ROUTES } from '../../common/config';
+import { FORBIDDEN_PARAM, ROUTES } from '../../common/config';
 import type { UserRole } from '../../common/domain/session';
 import { AuthGuard } from './auth-guard';
 
@@ -16,7 +16,7 @@ function RoleCheck({ role, children }: Readonly<{ role: UserRole; children: Reac
   const allowed = user?.role === role;
 
   useEffect(() => {
-    if (!allowed) router.replace(ROUTES.home);
+    if (!allowed) router.replace(`${ROUTES.home}?${FORBIDDEN_PARAM}=1`);
   }, [allowed, router]);
 
   return allowed ? (

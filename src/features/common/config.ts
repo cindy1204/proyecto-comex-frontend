@@ -31,6 +31,9 @@ export const ROUTES = {
   admin: '/admin',
 } as const;
 
+/** Parámetro de búsqueda con el que se redirige al inicio al no tener permiso (`/?forbidden=1`). */
+export const FORBIDDEN_PARAM = 'forbidden';
+
 export const SESSION_STORAGE_KEY = 'colcomex-session';
 /** Evento de `window` que `apiRequest` emite cuando el backend rechaza el token con 401. */
 export const SESSION_EXPIRED_EVENT = 'colcomex:session-expired';

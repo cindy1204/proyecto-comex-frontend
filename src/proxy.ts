@@ -1,5 +1,10 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { AUTH_ROLE_COOKIE, AUTH_TOKEN_COOKIE, ROUTES } from './features/common/config';
+import {
+  AUTH_ROLE_COOKIE,
+  AUTH_TOKEN_COOKIE,
+  FORBIDDEN_PARAM,
+  ROUTES,
+} from './features/common/config';
 import { isCuid } from './features/common/domain/id';
 import { isJwtExpired } from './features/common/utils/jwt';
 import { isAdminPath, isGuestOnlyPath, isPrivatePath } from './features/dashboard/domain/routes';
@@ -12,6 +17,9 @@ import { findService } from './features/services/domain/services';
  * (la página 404 de la app, ya traducida, se sigue mostrando).
  */
 const NOT_FOUND_PATH = '/_recurso-inexistente';
+
+/** Destino cuando falta el permiso: el inicio muestra un aviso (`FORBIDDEN_PARAM`). */
+const FORBIDDEN_HOME = `${ROUTES.home}?${FORBIDDEN_PARAM}=1`;
 
 function isMissingResourcePath(pathname: string): boolean {
   const [section, id, ...rest] = pathname.split('/').filter(Boolean);
@@ -49,7 +57,7 @@ export function proxy(request: NextRequest) {
   }
 
   if (isAdminPath(pathname) && role !== 'admin') {
-    return NextResponse.redirect(new URL(ROUTES.home, request.url));
+    return NextResponse.redirect(new URL(FORBIDDEN_HOME, request.url));
   }
 
   if (isGuestOnlyPath(pathname) && isAuthenticated) {
