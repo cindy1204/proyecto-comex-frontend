@@ -2,18 +2,24 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { useAuth } from './auth-provider';
 
 export function AccountForm({ mode }: Readonly<{ mode: 'login' | 'register' }>) {
-  const { login, register } = useAuth();
+  const { user, loading, login, register } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestedReturnTo = searchParams.get('returnTo');
-  const returnTo = isInternalPath(requestedReturnTo) ? requestedReturnTo : '/#servicios';
+  const hasReturnTo = isInternalPath(requestedReturnTo);
+  const returnTo = hasReturnTo ? requestedReturnTo : '/mis-interacciones';
   const accountHref = `/${mode === 'register' ? 'login' : 'registro'}?returnTo=${encodeURIComponent(returnTo)}`;
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (loading || !user) return;
+    router.replace(user.role === 'admin' ? getAdminReturnPath(returnTo) : getUserReturnPath(returnTo));
+  }, [loading, user, router, returnTo]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -25,15 +31,23 @@ export function AccountForm({ mode }: Readonly<{ mode: 'login' | 'register' }>) 
     const password = String(formData.get('password') ?? '');
 
     try {
-      if (mode === 'register') await register(name, email, password);
-      else await login(email, password);
-      router.replace(`/mis-interacciones?continuar=${encodeURIComponent(returnTo)}`);
+      if (mode === 'register') {
+        await register(name, email, password);
+        router.replace(getUserReturnPath(returnTo));
+      } else {
+        const authenticatedUser = await login(email, password);
+        router.replace(authenticatedUser.role === 'admin'
+          ? getAdminReturnPath(returnTo)
+          : getUserReturnPath(returnTo));
+      }
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'No se pudo completar el acceso.');
     } finally {
       setSubmitting(false);
     }
   }
+
+  if (loading || user) return <p className="notice">Verificando tu sesión…</p>;
 
   return (
     <section className="form-card account-card">
@@ -83,4 +97,17 @@ export function AccountForm({ mode }: Readonly<{ mode: 'login' | 'register' }>) 
 
 function isInternalPath(value: string | null): value is string {
   return Boolean(value?.startsWith('/') && !value.startsWith('//'));
+}
+
+function getAdminReturnPath(returnTo: string) {
+  return returnTo === '/admin' || returnTo.startsWith('/admin/') ? returnTo : '/admin';
+}
+
+function getUserReturnPath(returnTo: string) {
+  return returnTo === '/mis-interacciones'
+    || returnTo === '/importaciones'
+    || returnTo === '/exportaciones'
+    || /^\/servicios\/[^/]+\/formulario$/.test(returnTo)
+    ? returnTo
+    : '/mis-interacciones';
 }

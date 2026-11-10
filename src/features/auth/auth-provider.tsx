@@ -23,7 +23,7 @@ interface AuthContextValue {
   token: string | null;
   loading: boolean;
   error: string | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<AuthUser>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   restoreSession: () => Promise<void>;
@@ -84,6 +84,7 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
     });
     localStorage.setItem(storageKey, result.data.token);
     setSession(result.data);
+    return result.data.user;
   }, []);
 
   const register = useCallback(async (name: string, email: string, password: string) => {

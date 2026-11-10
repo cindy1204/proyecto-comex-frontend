@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { ApiError, apiRequest } from '@/lib/api';
 import { useAuth } from '@/features/auth/auth-provider';
-import { CatalogImageManager } from './catalog-image-manager';
+import { CatalogManagement } from './catalog-management';
 
 interface ContactRequest {
   id: string;
@@ -71,14 +71,14 @@ export function AdminDashboard() {
       if (signal.aborted) return;
       if (error instanceof ApiError && error.status === 401) {
         logout();
-        setContactsError('Tu sesión venció. Inicia sesión de nuevo.');
+        router.replace('/login?returnTo=%2Fadmin');
       } else {
         setContactsError(error instanceof Error ? error.message : 'No se pudieron cargar las solicitudes.');
       }
     } finally {
       if (!signal.aborted) setContactsLoading(false);
     }
-  }, [token, user?.role, logout, contactsPage, contactsType, appliedSearch]);
+  }, [token, user?.role, logout, router, contactsPage, contactsType, appliedSearch]);
 
   useEffect(() => {
     if (!token || user?.role !== 'admin') return;
@@ -92,6 +92,12 @@ export function AdminDashboard() {
       controller.abort();
     };
   }, [token, user?.role, refreshKey, loadContacts]);
+
+  useEffect(() => {
+    if (!authLoading && authError?.startsWith('Tu sesión venció')) {
+      router.replace('/login?returnTo=%2Fadmin');
+    }
+  }, [authLoading, authError, router]);
 
   function applyContactFilters(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -138,6 +144,11 @@ export function AdminDashboard() {
         success: true,
       });
     } catch (error) {
+      if (error instanceof ApiError && error.status === 401) {
+        logout();
+        router.replace('/login?returnTo=%2Fadmin');
+        return;
+      }
       setAdminMessage({
         text: error instanceof Error ? error.message : 'No se pudo crear la cuenta.',
         success: false,
@@ -324,7 +335,7 @@ export function AdminDashboard() {
           </div>
         )}
 
-        <CatalogImageManager />
+        <CatalogManagement />
 
         <section className="admin-register-section">
           <button

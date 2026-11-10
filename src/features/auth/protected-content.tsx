@@ -22,6 +22,10 @@ export function ProtectedContent({
     if (!loading && error?.startsWith('Tu sesión venció')) router.replace(loginHref);
   }, [loading, error, router, loginHref]);
 
+  useEffect(() => {
+    if (!loading && user && requiredRole && user.role !== requiredRole) router.replace('/');
+  }, [loading, user, requiredRole, router]);
+
   if (loading) return <p className="notice">Cargando tu sesión…</p>;
   if (error) {
     return (
@@ -35,7 +39,7 @@ export function ProtectedContent({
   }
   if (!user) return <p className="notice">Debes <Link href={loginHref}>iniciar sesión o crear una cuenta</Link> para continuar.</p>;
   if (requiredRole && user.role !== requiredRole) {
-    return <p className="notice notice-error" role="alert">No tienes permisos para ver esta página.</p>;
+    return <p className="notice">Redirigiendo…</p>;
   }
   return children;
 }

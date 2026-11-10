@@ -811,6 +811,87 @@ textarea {
   margin-top: 32px;
 }
 
+.catalog-management {
+  border-top: 1px solid var(--line);
+  padding-top: 32px;
+}
+
+.catalog-management > .form-card {
+  width: 100%;
+}
+
+.catalog-management h3,
+.catalog-admin-card h4 {
+  margin: 0;
+  color: var(--navy);
+  font-size: 1.2rem;
+}
+
+.catalog-management-list {
+  margin-top: 38px;
+}
+
+.catalog-management-list > h3 {
+  margin-bottom: 18px;
+}
+
+.catalog-admin-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.catalog-admin-card .eyebrow,
+.catalog-admin-card > p {
+  margin: 0;
+}
+
+.catalog-admin-card h4 {
+  font-size: 1.05rem;
+  line-height: 1.45;
+}
+
+.catalog-management-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.catalog-admin-card .catalog-management-actions {
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.catalog-delete-confirmation {
+  position: fixed;
+  z-index: 50;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgb(15 23 42 / 55%);
+  padding: 20px;
+}
+
+.catalog-delete-confirmation > div {
+  width: min(480px, 100%);
+  border-radius: 14px;
+  background: #fff;
+  padding: 26px;
+  box-shadow: 0 20px 60px rgb(7 59 114 / 22%);
+}
+
+.catalog-delete-confirmation h3 {
+  margin: 0 0 10px;
+  color: var(--navy);
+}
+
+.catalog-delete-confirmation p {
+  margin: 0 0 20px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
 .admin-register-card {
   margin-top: 18px;
 }
@@ -819,6 +900,29 @@ textarea {
   margin: 0;
   color: var(--navy);
   font-size: 1.45rem;
+}
+
+.account-form-options {
+  margin-bottom: 48px;
+}
+
+.account-form-options .page-heading h2 {
+  margin: 0;
+  color: var(--navy);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+.account-form-options .service-card {
+  display: block;
+}
+
+.account-form-link {
+  display: inline-block;
+  margin-top: 18px;
+  color: var(--blue);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: underline;
 }
 
 .interaction-card details {
