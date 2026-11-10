@@ -3,23 +3,24 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, type ReactNode } from 'react';
 import { useTranslation } from '../../i18n/hooks/use-translation';
+import { resolvePostAuthPath } from '../../dashboard/domain/routes';
 import { Loading } from '../../common/components/loading';
 import { useSession } from '../hooks/use-session';
 
 interface GuestGuardProps {
-  /** Ruta interna a la que se envía al usuario con sesión (p. ej. el `returnTo` validado). */
-  redirectTo: string;
+  /** `returnTo` validado. Si falta o el rol no puede abrirlo, aterriza en el espacio de trabajo de su rol. */
+  redirectTo?: string;
   children: ReactNode;
 }
 
-/** Para login/registro: con sesión activa redirige; también tras iniciar sesión con éxito. */
+/** Para login/registro: tras autenticarse redirige al `returnTo` o, si no hay, al aterrizaje del rol. */
 export function GuestGuard({ redirectTo, children }: Readonly<GuestGuardProps>) {
   const { user } = useSession();
   const { t } = useTranslation();
   const router = useRouter();
 
   useEffect(() => {
-    if (user) router.replace(redirectTo);
+    if (user) router.replace(resolvePostAuthPath(user.role, redirectTo));
   }, [user, redirectTo, router]);
 
   return user ? (

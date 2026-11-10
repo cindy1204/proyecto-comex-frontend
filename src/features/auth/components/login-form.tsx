@@ -10,14 +10,14 @@ import { Field } from '../../common/components/field';
 import { Input } from '../../common/components/input';
 import { ROUTES } from '../../common/config';
 import { useFormAction } from '../../common/hooks/use-form-action';
-import { toSafeInternalPath } from '../../common/utils/safe-path';
+import { toOptionalSafePath } from '../../common/utils/safe-path';
 import { useSession } from '../hooks/use-session';
 import { AuthCard } from './auth-card';
 import { GuestGuard } from './guest-guard';
 
 export function LoginForm() {
   const searchParams = useSearchParams();
-  const returnTo = toSafeInternalPath(searchParams.get('returnTo'));
+  const returnTo = toOptionalSafePath(searchParams.get('returnTo'));
   const sessionExpired = searchParams.get('expirada') === '1';
   const { login } = useSession();
   const { t } = useTranslation();
@@ -32,7 +32,9 @@ export function LoginForm() {
   );
   const { handleSubmit, isSubmitting, error, fieldErrors } = useFormAction(action);
 
-  const registerHref = `${ROUTES.register}?returnTo=${encodeURIComponent(returnTo)}`;
+  const registerHref = returnTo
+    ? `${ROUTES.register}?returnTo=${encodeURIComponent(returnTo)}`
+    : ROUTES.register;
 
   return (
     <GuestGuard redirectTo={returnTo}>

@@ -11,7 +11,7 @@ import { Input } from '../../common/components/input';
 import { ROUTES } from '../../common/config';
 import { useFormAction } from '../../common/hooks/use-form-action';
 import { ApiError } from '../../common/services/api-error';
-import { toSafeInternalPath } from '../../common/utils/safe-path';
+import { toOptionalSafePath } from '../../common/utils/safe-path';
 import { useSession } from '../hooks/use-session';
 import { AuthCard } from './auth-card';
 import { GuestGuard } from './guest-guard';
@@ -20,7 +20,7 @@ const PASSWORD_MIN_LENGTH = 8;
 
 export function RegisterForm() {
   const searchParams = useSearchParams();
-  const returnTo = toSafeInternalPath(searchParams.get('returnTo'));
+  const returnTo = toOptionalSafePath(searchParams.get('returnTo'));
   const { register } = useSession();
   const { t } = useTranslation();
 
@@ -45,7 +45,9 @@ export function RegisterForm() {
   );
   const { handleSubmit, isSubmitting, error, fieldErrors } = useFormAction(action);
 
-  const loginHref = `${ROUTES.login}?returnTo=${encodeURIComponent(returnTo)}`;
+  const loginHref = returnTo
+    ? `${ROUTES.login}?returnTo=${encodeURIComponent(returnTo)}`
+    : ROUTES.login;
 
   return (
     <GuestGuard redirectTo={returnTo}>
