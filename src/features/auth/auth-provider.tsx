@@ -88,12 +88,13 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
 
   const register = useCallback(async (name: string, email: string, password: string) => {
     setError(null);
-    await apiRequest<{ data: AuthUser }>('/api/auth/register', {
+    const result = await apiRequest<{ data: Session }>('/api/auth/register', {
       method: 'POST',
       body: { name, email, password },
     });
-    await login(email, password);
-  }, [login]);
+    localStorage.setItem(storageKey, result.data.token);
+    setSession(result.data);
+  }, []);
 
   const logout = useCallback(() => {
     localStorage.removeItem(storageKey);
