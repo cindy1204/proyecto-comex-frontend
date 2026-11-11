@@ -1,4 +1,5 @@
 import { PDFDocument, StandardFonts, type PDFFont, type PDFPage } from 'pdf-lib';
+import { toPdfText } from './pdf-text';
 
 type ExportFormData = Record<string, FormDataEntryValue>;
 
@@ -70,7 +71,7 @@ function getIdentificationCode(value: string) {
 
 function wrapText(text: string, font: PDFFont, fontSize: number, maxWidth: number) {
   const lines: string[] = [];
-  const paragraphs = text.split(/\r?\n/);
+  const paragraphs = toPdfText(text).split(/\r?\n/);
 
   for (const paragraph of paragraphs) {
     let line = '';
@@ -167,7 +168,7 @@ function addObservationContinuation(
   for (let offset = 0; offset < lines.length; offset += linesPerPage) {
     const page = pdf.addPage([pageWidth, pageHeight]);
     page.drawText(title, { x: pageMargin, y: pageHeight - pageMargin, font, size: 12 });
-    page.drawText(context.join('   |   '), {
+    page.drawText(toPdfText(context.join('   |   ')), {
       x: pageMargin,
       y: pageHeight - pageMargin - 24,
       font,
