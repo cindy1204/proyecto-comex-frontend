@@ -7,7 +7,11 @@ import { AuthGuard } from '@/features/dashboard/components/auth-guard';
 import { RequestBoundary } from '@/features/i18n/components/request-boundary';
 import { getTranslations } from '@/features/i18n/services/get-translations';
 import { ServiceRequestForm } from '@/features/services/components/service-request-form';
-import { GENERIC_FORM_SERVICES, findService } from '@/features/services/domain/services';
+import {
+  GENERIC_FORM_SERVICES,
+  findService,
+  type Service,
+} from '@/features/services/domain/services';
 
 type ServiceParams = Promise<{ servicio: string }>;
 
@@ -28,10 +32,7 @@ export async function generateMetadata({ params }: { params: ServiceParams }): P
   };
 }
 
-async function ServiceFormContent({ params }: { params: ServiceParams }) {
-  const { servicio } = await params;
-  const service = findService(servicio);
-  if (!service?.usesGenericForm) notFound();
+async function ServiceFormContent({ service }: { service: Service }) {
   const { t } = await getTranslations();
 
   return (
@@ -50,10 +51,15 @@ async function ServiceFormContent({ params }: { params: ServiceParams }) {
   );
 }
 
-export default function ServiceFormPage({ params }: { params: ServiceParams }) {
+// notFound() se llama aquí, antes de hacer streaming: así la respuesta es un 404 real y no un 200.
+export default async function ServiceFormPage({ params }: { params: ServiceParams }) {
+  const { servicio } = await params;
+  const service = findService(servicio);
+  if (!service?.usesGenericForm) notFound();
+
   return (
     <RequestBoundary>
-      <ServiceFormContent params={params} />
+      <ServiceFormContent service={service} />
     </RequestBoundary>
   );
 }
