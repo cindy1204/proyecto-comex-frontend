@@ -8,7 +8,7 @@ describe('calculateDollarTotal', () => {
     ['1.005', '1', '1.01'],
     ['.5', '2', '1.00'],
     ['0', '3', '0.00'],
-    ['2e3', '1.25', '2500.00'],
+    ['1.000,50', '2', '2001.00'],
   ])('multiplies %s by %s to produce %s', (amount, rate, expected) => {
     expect(calculateDollarTotal(amount, rate)).toBe(expected);
   });
@@ -19,6 +19,7 @@ describe('calculateDollarTotal', () => {
     ['-1', '2'],
     ['abc', '2'],
     ['1e309', '2'],
+    ['2e3', '1.25'],
   ])('leaves the total empty for invalid values %j and %j', (amount, rate) => {
     expect(calculateDollarTotal(amount, rate)).toBe('');
   });

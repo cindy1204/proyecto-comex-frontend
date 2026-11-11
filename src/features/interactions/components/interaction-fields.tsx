@@ -56,13 +56,12 @@ function FieldControl({
       {...(calculatedValue === undefined
         ? { defaultValue }
         : { value: calculatedValue, readOnly: true })}
-      maxLength={kind === 'number' ? undefined : isCurrency ? 3 : 250}
-      min={kind === 'number' ? 0 : undefined}
+      inputMode={kind === 'number' ? 'decimal' : undefined}
+      maxLength={kind === 'number' ? 24 : isCurrency ? 3 : 250}
       name={name}
       pattern={isCurrency ? '[A-Za-z]{3}' : undefined}
       placeholder={placeholderKey ? t(placeholderKey) : undefined}
-      step={kind === 'number' ? 'any' : undefined}
-      type={kind}
+      type={kind === 'number' ? 'text' : kind}
     />
   );
 }

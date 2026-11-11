@@ -128,6 +128,7 @@ export const en: Messages = {
     nameMinLength: 'Name must be at least {min} characters long.',
     numberInvalid: 'Enter a number greater than or equal to 0.',
     currencyInvalid: 'Use a 3-letter code, for example USD.',
+    netNegative: 'Deductions cannot exceed the FOB value plus export expenses.',
   },
   notFound: {
     eyebrow: 'Error 404',
@@ -472,6 +473,7 @@ export const en: Messages = {
     noDocuments: 'No invoice or DEX is required for this numeral.',
     noInvoice: 'These numerals do not legalize an invoice.',
     netReintegro: 'Calculated net reimbursement:',
+    netReintegroLabel: 'Calculated net reimbursement',
     saved: 'Request saved. You can print this copy for your records.',
     saving: 'Saving…',
     save: 'Save request',

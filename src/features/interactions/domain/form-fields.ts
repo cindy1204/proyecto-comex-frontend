@@ -1,3 +1,9 @@
+import {
+  decimalToCents,
+  formatCents,
+  normalizeDecimal,
+  parseDecimal,
+} from '../../common/domain/decimal';
 import type { ValidationIssue } from '../../common/domain/validation';
 import type { TranslationKey } from '../../i18n/domain/translate';
 import { OPERATIONS, type InteractionType } from './interaction';
@@ -246,15 +252,14 @@ export function suggestedDocuments(
   );
 }
 
-/** Reintegro neto = FOB + gastos - deducciones, calculado en centavos para evitar errores de coma flotante. */
+/** Reintegro neto en centavos = FOB + gastos - deducciones. Un valor vacío o inválido cuenta como 0. */
+export function calculateNetCents(values: FormData): bigint {
+  const cents = (name: string) => decimalToCents(String(values.get(name) ?? '')) ?? BigInt(0);
+  return cents('totalValorFob') + cents('totalGastosExportacion') - cents('deducciones');
+}
+
 export function calculateNetReintegro(values: FormData): string {
-  const toCents = (name: string) => {
-    const value = Number(values.get(name));
-    return Number.isFinite(value) ? Math.round(value * 100) : 0;
-  };
-  const cents =
-    toCents('totalValorFob') + toCents('totalGastosExportacion') - toCents('deducciones');
-  return (cents / 100).toFixed(2);
+  return formatCents(calculateNetCents(values));
 }
 
 /** Convierte el formulario en el `data` que espera el backend (todo texto; exportación suma el reintegro neto). */
@@ -262,23 +267,30 @@ export function readInteractionData(
   type: InteractionType,
   values: FormData,
 ): Record<string, string> {
+  const numericFields = new Set(
+    FORM_FIELDS[type].filter((field) => field.kind === 'number').map((field) => field.name),
+  );
   const data: Record<string, string> = {};
-  for (const [key, value] of values.entries()) data[key] = String(value);
+  for (const [key, value] of values.entries()) {
+    data[key] = numericFields.has(key) ? normalizeDecimal(String(value)) : String(value);
+  }
   if (type === 'formulario-exportaciones')
     data.reintegroNetoCalculado = calculateNetReintegro(values);
   return data;
 }
 
-const CURRENCY_PATTERN = /^[A-Za-z]{3}$/;
-
-function isNonNegativeNumber(value: string): boolean {
-  const number = Number(value);
-  return value !== '' && Number.isFinite(number) && number >= 0;
+/** Clave de la etiqueta visible de un dato guardado; `undefined` si el nombre no tiene definición. */
+export function fieldLabelKey(type: InteractionType, name: string): TranslationKey | undefined {
+  if (name === OPERATIONS[type].numeralField) return 'interactions.numeral';
+  if (name === 'reintegroNetoCalculado') return 'interactions.netReintegroLabel';
+  return FORM_FIELDS[type].find((field) => field.name === name)?.labelKey;
 }
 
+const CURRENCY_PATTERN = /^[A-Za-z]{3}$/;
+
 /**
- * Valida el formulario de una operación con las mismas reglas que antes aplicaba el navegador:
- * campos `required`, numéricos `>= 0`, moneda de 3 letras y numeral seleccionado.
+ * Valida el formulario de una operación: campos `required`, numéricos con coma o punto
+ * decimal y no negativos, moneda de 3 letras, numeral seleccionado y reintegro neto no negativo.
  */
 export function validateInteractionForm(
   type: InteractionType,
@@ -290,7 +302,7 @@ export function validateInteractionForm(
     const value = read(name);
     if (!value) {
       if (required) issues.push({ field: name, key: 'validation.required' });
-    } else if (kind === 'number' && !isNonNegativeNumber(value)) {
+    } else if (kind === 'number' && parseDecimal(value) === null) {
       issues.push({ field: name, key: 'validation.numberInvalid' });
     } else if (name === 'monedaNegociacion' && !CURRENCY_PATTERN.test(value)) {
       issues.push({ field: name, key: 'validation.currencyInvalid' });
@@ -298,5 +310,7 @@ export function validateInteractionForm(
   }
   const numeralField = OPERATIONS[type].numeralField;
   if (!read(numeralField)) issues.push({ field: numeralField, key: 'validation.required' });
+  if (type === 'formulario-exportaciones' && calculateNetCents(values) < BigInt(0))
+    issues.push({ field: 'deducciones', key: 'validation.netNegative' });
   return issues;
 }

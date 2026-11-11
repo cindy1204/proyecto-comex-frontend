@@ -2,6 +2,7 @@
 
 import { Badge } from '../../common/components/badge';
 import { useTranslation } from '../../i18n/hooks/use-translation';
+import { fieldLabelKey } from '../domain/form-fields';
 import { interactionLabel, formatDataValue, type Interaction } from '../domain/interaction';
 
 export function InteractionDetail({ interaction }: Readonly<{ interaction: Interaction }>) {
@@ -33,12 +34,15 @@ export function InteractionDetail({ interaction }: Readonly<{ interaction: Inter
         )}
       </p>
       <dl className="grid gap-3 sm:grid-cols-2">
-        {Object.entries(interaction.data).map(([key, value]) => (
-          <div key={key}>
-            <dt className="type-label text-muted-foreground">{key}</dt>
-            <dd className="break-words text-foreground">{formatDataValue(value) || '—'}</dd>
-          </div>
-        ))}
+        {Object.entries(interaction.data).map(([key, value]) => {
+          const labelKey = fieldLabelKey(interaction.type, key);
+          return (
+            <div key={key}>
+              <dt className="type-label text-muted-foreground">{labelKey ? t(labelKey) : key}</dt>
+              <dd className="break-words text-foreground">{formatDataValue(value) || '—'}</dd>
+            </div>
+          );
+        })}
       </dl>
     </div>
   );

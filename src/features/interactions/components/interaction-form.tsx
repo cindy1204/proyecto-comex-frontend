@@ -13,6 +13,7 @@ import { useCatalogByCategory } from '../../catalog/hooks/use-catalog';
 import {
   NUMERALS_WITHOUT_INVOICE,
   calculateNetReintegro,
+  fieldLabelKey,
   readInteractionData,
   suggestedDocuments,
   validateInteractionForm,
@@ -36,6 +37,8 @@ export function InteractionForm({ type }: Readonly<{ type: InteractionType }>) {
   const [selectedCode, setSelectedCode] = useState('');
   const [netAmount, setNetAmount] = useState('0.00');
   const [submitted, setSubmitted] = useState<Submitted | null>(null);
+  // Cambiar la key remonta el formulario: limpia campos, cálculos y numeral tras guardar.
+  const [formKey, setFormKey] = useState(0);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
 
@@ -60,6 +63,9 @@ export function InteractionForm({ type }: Readonly<{ type: InteractionType }>) {
         data,
         numeralTitle: items.find((item) => item.code === data[numeralField])?.title,
       });
+      setFormKey((key) => key + 1);
+      setSelectedCode('');
+      setNetAmount('0.00');
     },
     [items, numeralField],
   );
@@ -80,10 +86,9 @@ export function InteractionForm({ type }: Readonly<{ type: InteractionType }>) {
       } else {
         await downloadFilledExportPdf(submitted.data);
       }
-    } catch (error) {
-      setDownloadError(
-        error instanceof Error ? error.message : t('interactions.pdfDownloadFailed'),
-      );
+    } catch {
+      // Los errores del generador son técnicos; el usuario siempre ve el mensaje traducido.
+      setDownloadError(t('interactions.pdfDownloadFailed'));
     } finally {
       setIsDownloadingPdf(false);
     }
@@ -93,6 +98,7 @@ export function InteractionForm({ type }: Readonly<{ type: InteractionType }>) {
     <div className="flex flex-col gap-8">
       <form
         className="flex flex-col gap-5"
+        key={formKey}
         noValidate
         onInput={(event) => {
           if (!isImport) setNetAmount(calculateNetReintegro(new FormData(event.currentTarget)));
@@ -168,12 +174,17 @@ export function InteractionForm({ type }: Readonly<{ type: InteractionType }>) {
             </Button>
           </div>
           <dl className="grid gap-3 sm:grid-cols-2">
-            {Object.entries(submitted.data).map(([key, value]) => (
-              <div key={key}>
-                <dt className="type-label text-muted-foreground">{key}</dt>
-                <dd className="break-words text-foreground">{value}</dd>
-              </div>
-            ))}
+            {Object.entries(submitted.data).map(([key, value]) => {
+              const labelKey = fieldLabelKey(type, key);
+              return (
+                <div key={key}>
+                  <dt className="type-label text-muted-foreground">
+                    {labelKey ? t(labelKey) : key}
+                  </dt>
+                  <dd className="break-words text-foreground">{value}</dd>
+                </div>
+              );
+            })}
             {submitted.numeralTitle && (
               <div>
                 <dt className="type-label text-muted-foreground">

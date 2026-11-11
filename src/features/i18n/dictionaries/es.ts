@@ -130,6 +130,7 @@ export const es = {
     nameMinLength: 'El nombre requiere al menos {min} caracteres.',
     numberInvalid: 'Ingresa un número mayor o igual a 0.',
     currencyInvalid: 'Usa un código de 3 letras, por ejemplo USD.',
+    netNegative: 'Las deducciones no pueden superar el valor FOB más los gastos de exportación.',
   },
   notFound: {
     eyebrow: 'Error 404',
@@ -474,6 +475,7 @@ export const es = {
     noDocuments: 'No se solicita factura ni DEX para este numeral.',
     noInvoice: 'Estos numerales no legalizan factura.',
     netReintegro: 'Reintegro neto calculado:',
+    netReintegroLabel: 'Reintegro neto calculado',
     saved: 'Solicitud guardada. Puedes imprimir esta copia para tus soportes.',
     saving: 'Guardando…',
     save: 'Guardar solicitud',
