@@ -31,7 +31,8 @@ export function ServiceRequestForm({ service }: Readonly<{ service: Service }>) 
   const submit = useCallback(
     async (values: FormData) => {
       // Mismas reglas que el formulario de contacto (comparten endpoint y campos).
-      const details = validateContactForm(readContactForm(values, service.contactType), t);
+      const contact = readContactForm(values, service.contactType);
+      const details = validateContactForm(contact, t);
       if (details.length > 0) throw validationError(details);
       return createContactRequest({
         nombreCompleto: String(values.get('nombreCompleto') ?? '').trim(),
@@ -43,7 +44,7 @@ export function ServiceRequestForm({ service }: Readonly<{ service: Service }>) 
           DICTIONARIES.es.services.items[service.slug].title,
           values,
         ),
-        montoEstimado: readOptional(values, 'montoEstimado'),
+        montoEstimado: contact.montoEstimado || undefined,
       });
     },
     [service, t],
@@ -99,16 +100,7 @@ export function ServiceRequestForm({ service }: Readonly<{ service: Service }>) 
           {(control) => <Input {...control} maxLength={100} name="pais" />}
         </Field>
         <Field error={fieldErrors.montoEstimado} label={t('services.form.approxAmount')}>
-          {(control) => (
-            <Input
-              {...control}
-              inputMode="decimal"
-              min="0"
-              name="montoEstimado"
-              step="0.01"
-              type="number"
-            />
-          )}
+          {(control) => <Input {...control} inputMode="decimal" name="montoEstimado" type="text" />}
         </Field>
         <Field error={numerals.error ?? undefined} label={t('services.form.numeral')}>
           {(control) => (

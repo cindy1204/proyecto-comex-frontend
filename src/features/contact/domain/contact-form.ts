@@ -1,4 +1,5 @@
 import type { FieldError } from '../../common/domain/api-error';
+import { normalizeDecimal } from '../../common/domain/decimal';
 import type { TranslateFunction } from '../../i18n/domain/translate';
 import {
   isContactProductType,
@@ -46,7 +47,8 @@ export function readContactForm(
     telefono: text(form, 'telefono'),
     tipoProducto: isContactProductType(productType) ? productType : fallbackType,
     descripcionCaso: text(form, 'descripcionCaso'),
-    montoEstimado: text(form, 'montoEstimado'),
+    // Acepta coma decimal ("1.500,50") y la convierte al punto que espera el backend.
+    montoEstimado: normalizeDecimal(text(form, 'montoEstimado')),
   };
 }
 

@@ -97,10 +97,8 @@ export function ContactFields({ fieldErrors, defaultType, initial }: Readonly<Co
               {...control}
               defaultValue={initial?.montoEstimado ?? ''}
               inputMode="decimal"
-              min="0"
               name="montoEstimado"
-              step="0.01"
-              type="number"
+              type="text"
             />
           )}
         </Field>
