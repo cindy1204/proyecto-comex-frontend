@@ -71,17 +71,22 @@ npm run test:watch   # modo interactivo
 
 Cubren únicamente lógica de dominio pura (sin DOM ni red); no hay pruebas de componentes ni de extremo a extremo.
 
-| Archivo                | Qué verifica                                                                                                                      |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `routes.test.ts`       | `isPrivatePath`, `isAdminPath`, `isGuestOnlyPath` (prefijos parecidos, barra final) y `resolvePostAuthPath` por rol y `returnTo`. |
-| `safe-path.test.ts`    | Rechazo de redirecciones abiertas (`//evil.com`, `/\evil`, URLs absolutas) en `toSafeInternalPath` y `toOptionalSafePath`.        |
-| `jwt.test.ts`          | `isJwtExpired` con reloj inyectado (vigente, vencido, sin `exp`, malformado) y decodificación UTF-8 del payload.                  |
-| `id.test.ts`           | `isCuid`: longitudes límite, mayúsculas y símbolos.                                                                               |
-| `menu.test.ts`         | Ítems del menú que ve el visitante, el usuario y el administrador; etiquetas existentes en ambos idiomas.                         |
-| `catalog-form.test.ts` | `validateCatalogInput`: campos obligatorios, límites de longitud, dirección e imagen (formato y tamaño); `readCatalogForm`.       |
-| `locale.test.ts`       | `parseAcceptLanguage` (pesos `q`, regiones) y `resolveLocale` (cookie, cabecera, valor por defecto).                              |
-| `translate.test.ts`    | `createTranslator`: claves anidadas, interpolación, plurales y clave inexistente.                                                 |
-| `dictionaries.test.ts` | `es.ts` y `en.ts` tienen exactamente las mismas claves, los mismos parámetros `{nombre}` y variantes plurales completas.          |
+| Archivo                          | Qué verifica                                                                                                                                            |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `routes.test.ts`                 | `isPrivatePath`, `isAdminPath`, `isGuestOnlyPath` (prefijos parecidos, barra final) y `resolvePostAuthPath` por rol y `returnTo`.                       |
+| `safe-path.test.ts`              | Rechazo de redirecciones abiertas (`//evil.com`, `/\evil`, URLs absolutas) en `toSafeInternalPath` y `toOptionalSafePath`.                              |
+| `jwt.test.ts`                    | `isJwtExpired` con reloj inyectado (vigente, vencido, sin `exp`, malformado) y decodificación UTF-8 del payload.                                        |
+| `id.test.ts`                     | `isCuid`: longitudes límite, mayúsculas y símbolos.                                                                                                     |
+| `menu.test.ts`                   | Ítems del menú que ve el visitante, el usuario y el administrador; etiquetas existentes en ambos idiomas.                                               |
+| `catalog-form.test.ts`           | `validateCatalogInput`: campos obligatorios, límites de longitud, dirección e imagen (formato y tamaño); `readCatalogForm`.                             |
+| `locale.test.ts`                 | `parseAcceptLanguage` (pesos `q`, regiones) y `resolveLocale` (cookie, cabecera, valor por defecto).                                                    |
+| `translate.test.ts`              | `createTranslator`: claves anidadas, interpolación, plurales y clave inexistente.                                                                       |
+| `dictionaries.test.ts`           | `es.ts` y `en.ts` tienen exactamente las mismas claves, los mismos parámetros `{nombre}` y variantes plurales completas.                                |
+| `decimal.test.ts`                | `normalizeDecimal` y `parseDecimal` (coma o punto decimal; rechaza signos, notación exponencial y vacíos), redondeo half-up a centavos y `formatCents`. |
+| `calculate-dollar-total.test.ts` | Valor en dólares (monto × tasa) con aritmética decimal exacta; entradas con coma o inválidas.                                                           |
+| `net-reintegro.test.ts`          | Reintegro neto (FOB + gastos − deducciones) en centavos y la validación de deducciones que superan la base.                                             |
+| `pdf-text.test.ts`               | `toPdfText`: caracteres que la fuente estándar del PDF no dibuja se sustituyen por `?`; conserva saltos de línea y elimina caracteres de control.       |
+| `validation.test.ts`             | Validación de correo, inicio de sesión, registro y alta de administradores.                                                                             |
 
 ## Credenciales de prueba
 
@@ -96,7 +101,7 @@ Usuarios creados por el seed del backend.
 
 - **Catálogo público** (`/catalogo`): listado paginado con filtros combinables (categoría, tipo ingreso/egreso, búsqueda con espera de escritura, rango de fechas de creación), estados de carga, vacío y error, tarjetas con imagen y respaldo cuando falta o falla. Detalle en `/catalogo/[id]` con `notFound()`.
 - **Catálogo (administración)**: tabla con filtro de estado (`Activos`, `Eliminados`, `Todos`), alta y edición en un modal con validación en cliente y errores por campo del backend, subida real de imagen (JPG, PNG o WebP de hasta 5 MB, con vista previa), eliminación lógica con confirmación y restauración.
-- **Interacciones**: el usuario crea formularios de importación y exportación y descarga el formulario oficial diligenciado en PDF; en `/mis-interacciones` los lista, filtra por tipo y fechas, consulta, edita y elimina. El administrador ve el listado global con filtros por tipo, usuario (ID) y fechas, consulta el usuario de cada registro y puede eliminar.
+- **Interacciones**: el usuario crea formularios de importación y exportación y descarga el formulario oficial diligenciado en PDF; en `/mis-interacciones` los lista, filtra por tipo y fechas, consulta, edita y elimina. Los montos aceptan coma o punto decimal; el valor en dólares y el reintegro neto (FOB + gastos − deducciones) se calculan en centavos con redondeo half-up, y el formulario avisa si el neto es negativo. En el PDF, los caracteres que la fuente estándar no dibuja se sustituyen por `?`. Tras guardar, el formulario se limpia para una nueva captura. El administrador ve el listado global con filtros por tipo, usuario (ID) y fechas, consulta el usuario de cada registro y puede eliminar.
 - **Solicitudes de contacto** (`/contacto`): formulario público (con sesión, la solicitud queda asociada al usuario) con monto estimado opcional en USD. En `/mis-solicitudes` el usuario las lista, edita y elimina; el administrador las revisa globalmente con filtros por servicio, búsqueda y fechas.
 - **Servicios** (`/servicios`, `/servicios/[servicio]`): contenido informativo, numerales relacionados y enlace al formulario correspondiente. Un servicio inexistente responde un 404 real (ver Notas técnicas).
 - **Panel de administración** (`/admin`): pestañas Catálogo, Interacciones, Solicitudes y Administradores (alta de nuevos administradores). Los totales de cada pestaña se leen de `pagination.total` de los propios listados (`limit=1`), sin endpoints adicionales.
@@ -219,4 +224,16 @@ Un `401` de la API cierra la sesión y los guards redirigen al login con `return
 - El layout raíz lee la cookie de idioma, por lo que todas las rutas se renderizan por petición (`export const instant = false` en `app/layout.tsx` evita que esa lectura bloquee el build con `cacheComponents: true`). En ese modo Next no puede cambiar a 404 el estado HTTP desde `notFound()`, así que `proxy.ts` responde 404 (reescribiendo a una ruta inexistente, que muestra la página 404 traducida) para un servicio desconocido (`/servicios/xyz`) y para un id de catálogo con formato inválido. `/nada` y las demás rutas sin coincidencia devuelven 404 de forma nativa.
 - `/catalogo/[id]` valida el formato del identificador antes de consultar el backend: un id con formato inválido responde 404 (lo resuelve `proxy.ts`); uno válido pero inexistente muestra la página de "no encontrado" (`notFound()`) con `noindex` y estado 200.
 - El detalle público consulta al backend sin credenciales, por lo que no muestra numerales eliminados (ni siquiera a un administrador).
-- Comprobaciones automáticas: `npm run i18n:check`, `typecheck`, `lint`, `test` y `build`.
+- Las rutas privadas sin sesión redirigen a `/login` desde `proxy.ts` antes de evaluar la página. Por eso `/servicios/exportaciones/formulario` sin sesión responde 307 (no 404); con sesión, un servicio que no usa el formulario genérico llama a `notFound()` y responde 404 real. Un servicio inexistente (`/servicios/no-existe/formulario`) responde 404 real. El 404 con sesión para un servicio no genérico aún no se comprobó en un navegador.
+- El formulario de solicitud de servicio usa las mismas reglas que el de contacto (campos y monto con coma o punto decimal).
+
+## Limitaciones conocidas
+
+- **Sesión en el cliente:** el JWT está en `localStorage` y en cookies no `HttpOnly`, así que un script inyectado (XSS) podría leer el token. Pasar a cookies `HttpOnly` exige rediseñar las rutas de autenticación; no está hecho.
+- **Despliegue pendiente:** las URLs de producción de la tabla "Despliegue" no están verificadas. No hay un build desplegado para probar contra un backend real.
+- **Equipo pendiente:** la tabla de reparto no incluye los nombres de quienes asumieron cada parte.
+- **Verificación:** `npm run build` compila sin errores; las comprobaciones de `i18n:check`, `typecheck`, `lint`, `test` y `format:check` pasan en local.
+
+## Comprobaciones automáticas
+
+`npm run i18n:check`, `npm run typecheck`, `npm run lint`, `npm test` y `npm run build`.
