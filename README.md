@@ -6,12 +6,31 @@ Construido con Next.js 16 (App Router), React 19, TypeScript estricto y Tailwind
 
 ## Despliegue
 
-| Componente           | URL       |
-| -------------------- | --------- |
-| Frontend             | COMPLETAR |
-| Backend              | COMPLETAR |
-| Repositorio frontend | COMPLETAR |
-| Repositorio backend  | COMPLETAR |
+| Componente           | URL                                                  |
+| -------------------- | ---------------------------------------------------- |
+| Frontend (Vercel)    | Pendiente del primer despliegue                      |
+| Backend (API)        | Pendiente del despliegue                             |
+| Repositorio frontend | https://github.com/cindy1204/proyecto-comex-frontend |
+| Repositorio backend  | https://github.com/cindy1204/proyecto-comex-backend  |
+
+### Publicar el frontend en Vercel
+
+1. Publica los cambios aprobados en GitHub y conecta la rama de producción acordada con el equipo.
+2. En [Vercel](https://vercel.com), elige **Add New → Project** e importa `cindy1204/proyecto-comex-frontend`.
+3. En **Settings → Environment Variables**, configura `NEXT_PUBLIC_API_HOST` con la URL pública del backend, sin `/api` ni una barra final.
+4. Ejecuta **Deploy**. Al finalizar, Vercel genera la URL pública del frontend (por ejemplo, `https://nombre-del-proyecto.vercel.app`); copia la URL real en la tabla anterior.
+5. Verifica que el frontend pueda comunicarse con el backend. El backend debe tener habilitado en `CORS_ORIGINS` el dominio real de Vercel.
+
+`NEXT_PUBLIC_API_HOST` se incluye en el build del frontend. Debe apuntar a un backend ya desplegado y accesible antes de compilar; después de cambiarlo se requiere un nuevo despliegue. Las URLs de producción siguen pendientes hasta completar y verificar los despliegues.
+
+## Reparto del trabajo
+
+| Componente | Responsabilidades                                                                                                                                                               |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Frontend   | Interfaz Next.js, navegación, autenticación en cliente, formularios, catálogo, solicitudes, experiencia adaptable y descarga de los formularios oficiales diligenciados en PDF. |
+| Backend    | API REST, autenticación y roles, validación, persistencia PostgreSQL/Prisma, migraciones, seed de prueba, catálogo e integración con el frontend.                               |
+
+Esta tabla describe la división técnica por repositorio; el equipo puede agregar los nombres de quienes asumieron cada parte.
 
 ## Instalación y ejecución
 
@@ -77,7 +96,7 @@ Usuarios creados por el seed del backend.
 
 - **Catálogo público** (`/catalogo`): listado paginado con filtros combinables (categoría, tipo ingreso/egreso, búsqueda con espera de escritura, rango de fechas de creación), estados de carga, vacío y error, tarjetas con imagen y respaldo cuando falta o falla. Detalle en `/catalogo/[id]` con `notFound()`.
 - **Catálogo (administración)**: tabla con filtro de estado (`Activos`, `Eliminados`, `Todos`), alta y edición en un modal con validación en cliente y errores por campo del backend, subida real de imagen (JPG, PNG o WebP de hasta 5 MB, con vista previa), eliminación lógica con confirmación y restauración.
-- **Interacciones**: el usuario crea formularios de importación y exportación, y en `/mis-interacciones` los lista, filtra por tipo y fechas, consulta, edita y elimina. El administrador ve el listado global con filtros por tipo, usuario (ID) y fechas, consulta el usuario de cada registro y puede eliminar.
+- **Interacciones**: el usuario crea formularios de importación y exportación y descarga el formulario oficial diligenciado en PDF; en `/mis-interacciones` los lista, filtra por tipo y fechas, consulta, edita y elimina. El administrador ve el listado global con filtros por tipo, usuario (ID) y fechas, consulta el usuario de cada registro y puede eliminar.
 - **Solicitudes de contacto** (`/contacto`): formulario público (con sesión, la solicitud queda asociada al usuario) con monto estimado opcional en USD. En `/mis-solicitudes` el usuario las lista, edita y elimina; el administrador las revisa globalmente con filtros por servicio, búsqueda y fechas.
 - **Servicios** (`/servicios`, `/servicios/[servicio]`): contenido informativo, numerales relacionados y enlace al formulario correspondiente. Un servicio inexistente responde un 404 real (ver Notas técnicas).
 - **Panel de administración** (`/admin`): pestañas Catálogo, Interacciones, Solicitudes y Administradores (alta de nuevos administradores). Los totales de cada pestaña se leen de `pagination.total` de los propios listados (`limit=1`), sin endpoints adicionales.
@@ -194,14 +213,6 @@ Las reglas de acceso están en `dashboard/domain/routes.ts` y las comparten el p
 | `/login` o `/registro` con sesión válida | `/`                                 |
 
 Un `401` de la API cierra la sesión y los guards redirigen al login con `returnTo`.
-
-## Reparto del trabajo
-
-| Integrante | Responsabilidad |
-| ---------- | --------------- |
-| COMPLETAR  | COMPLETAR       |
-| COMPLETAR  | COMPLETAR       |
-| COMPLETAR  | COMPLETAR       |
 
 ## Notas técnicas
 
