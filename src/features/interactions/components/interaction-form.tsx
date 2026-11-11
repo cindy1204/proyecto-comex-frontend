@@ -21,6 +21,7 @@ import { OPERATIONS, type InteractionType } from '../domain/interaction';
 import { createInteraction } from '../services/interaction.service';
 import { InteractionFields } from './interaction-fields';
 import { downloadFilledImportPdf } from '../import-pdf';
+import { downloadFilledExportPdf } from '../export-pdf';
 
 interface Submitted {
   data: Record<string, string>;
@@ -74,7 +75,11 @@ export function InteractionForm({ type }: Readonly<{ type: InteractionType }>) {
     setIsDownloadingPdf(true);
     setDownloadError(null);
     try {
-      await downloadFilledImportPdf(submitted.data);
+      if (isImport) {
+        await downloadFilledImportPdf(submitted.data);
+      } else {
+        await downloadFilledExportPdf(submitted.data);
+      }
     } catch (error) {
       setDownloadError(
         error instanceof Error ? error.message : t('interactions.pdfDownloadFailed'),
@@ -136,7 +141,7 @@ export function InteractionForm({ type }: Readonly<{ type: InteractionType }>) {
           <Button disabled={!canSubmit} isLoading={isSubmitting} type="submit">
             {isSubmitting ? t('interactions.saving') : t('interactions.save')}
           </Button>
-          {isImport && submitted && (
+          {submitted && (
             <Button
               isLoading={isDownloadingPdf}
               onClick={() => void downloadForm()}
