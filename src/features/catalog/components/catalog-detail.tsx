@@ -26,6 +26,7 @@ export function CatalogDetail({ item }: Readonly<{ item: CatalogItem }>) {
         <CatalogImage
           alt={t('catalog.imageAlt', { code: item.code })}
           className="aspect-video w-full rounded-lg"
+          code={item.code}
           src={item.imageUrl}
         />
         <div className="flex flex-col gap-4">

@@ -103,6 +103,7 @@ export function CatalogAdminPanel() {
         <CatalogImage
           alt={t('catalog.imageAlt', { code: item.code })}
           className="h-14 w-20 rounded-md"
+          code={item.code}
           src={item.imageUrl}
         />
       ),
