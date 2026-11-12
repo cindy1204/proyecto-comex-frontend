@@ -431,6 +431,9 @@ export const es = {
     types: {
       'formulario-importaciones': 'Importación',
       'formulario-exportaciones': 'Exportación',
+      'formulario-servicios': 'Servicios',
+      'formulario-inversiones': 'Inversiones',
+      'formulario-endeudamiento': 'Endeudamiento',
     },
     pages: {
       imports: {
@@ -447,7 +450,8 @@ export const es = {
       },
       mine: {
         title: 'Mis interacciones',
-        description: 'Formularios de importación y exportación que has diligenciado.',
+        description:
+          'Formularios de importación, exportación, servicios, inversiones y endeudamiento que has diligenciado.',
         fillForm: 'Diligenciar un formulario',
         lookingForRequests: '¿Buscas tus solicitudes de asesoría?',
         goToRequests: 'Ir a mis solicitudes',
@@ -484,6 +488,12 @@ export const es = {
     summary: 'Resumen de la solicitud',
     print: 'Imprimir / Guardar PDF',
     downloadForm: 'Descargar formulario',
+    downloadDeclaration: 'Descargar hoja de datos',
+    declarationPdf: {
+      title: 'Hoja de datos mínimos',
+      notice:
+        'Documento de apoyo. No es el formulario oficial del Banco de la República: el anexo DCIP-83 no publica una plantilla para esta operación. Verifica el formato vigente con tu intermediario del mercado cambiario.',
+    },
     pdfDownloadFailed: 'No se pudo descargar el formulario diligenciado.',
     numeralDescription: 'Descripción del numeral',
     updated: 'El formulario del numeral {code} se actualizó correctamente.',
@@ -498,14 +508,16 @@ export const es = {
       filterLabel: 'Filtrar formularios',
       imports: 'Importaciones',
       exports: 'Exportaciones',
+      services: 'Servicios',
+      investments: 'Inversiones',
+      debts: 'Endeudamiento',
       userId: 'ID de usuario',
       userIdPlaceholder: 'Identificador del usuario',
       userIdInvalid: 'Ingresa un identificador de usuario válido.',
       loading: 'Cargando formularios…',
       emptyTitle: 'Aún no hay formularios para mostrar',
       emptyFiltered: 'Ajusta los filtros para ver otros formularios.',
-      emptyDescription:
-        'Los formularios de importación y exportación que se diligencien aparecerán aquí.',
+      emptyDescription: 'Los formularios que diligencies, de cualquier familia, aparecerán aquí.',
       itemSr: 'formulario del numeral {code}',
       editTitle: 'Editar formulario del numeral {code}',
       detailTitle: 'Detalle del formulario',
@@ -554,11 +566,24 @@ export const es = {
         observaciones: 'Observaciones',
         nombreDeclarante: 'Nombre del declarante',
       },
+      declaration: {
+        fechaTramite: 'Fecha de la operación',
+        tipoIdentificacion: 'Tipo de identificación',
+        identificacion: 'Número de identificación',
+        nombreTitular: 'Nombre o razón social del titular',
+        monedaNegociacion: 'Código moneda de negociación',
+        valorMonedaNegociacion: 'Valor total en moneda de negociación',
+        tasaCambioDolares: 'Tasa de cambio a dólares',
+        valorTotalDolares: 'Valor total en dólares',
+        observaciones: 'Observaciones',
+        nombreDeclarante: 'Nombre del declarante',
+      },
     },
   },
   services: {
     requestAdvice: 'Solicitar asesoría',
     fillForm: 'Diligenciar formulario',
+    fillDeclaration: 'Diligenciar declaración',
     fallbackTitle: 'Servicio',
     page: {
       eyebrow: 'Servicios',
@@ -621,6 +646,14 @@ export const es = {
       submit: 'Enviar solicitud',
       sent: 'Recibimos tu solicitud. Un asesor se pondrá en contacto contigo.',
       viewRequests: 'Ver mis solicitudes',
+    },
+    declaration: {
+      metaTitle: 'Declaración de {service}',
+      fallbackTitle: 'Declaración de cambio',
+      eyebrow: 'Declaración de cambio',
+      title: 'Declaración de cambio',
+      description:
+        'Registra los datos mínimos de tu operación y el numeral cambiario asociado. La hoja que descargues es de apoyo y no reemplaza el formulario oficial.',
     },
   },
 };

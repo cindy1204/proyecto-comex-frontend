@@ -145,6 +145,9 @@ export function InteractionsList({ scope }: Readonly<InteractionsListProps>) {
               <option value="">{t('common.all')}</option>
               <option value="formulario-importaciones">{t('interactions.list.imports')}</option>
               <option value="formulario-exportaciones">{t('interactions.list.exports')}</option>
+              <option value="formulario-servicios">{t('interactions.list.services')}</option>
+              <option value="formulario-inversiones">{t('interactions.list.investments')}</option>
+              <option value="formulario-endeudamiento">{t('interactions.list.debts')}</option>
             </Select>
           )}
         </Field>

@@ -429,6 +429,9 @@ export const en: Messages = {
     types: {
       'formulario-importaciones': 'Import',
       'formulario-exportaciones': 'Export',
+      'formulario-servicios': 'Services',
+      'formulario-inversiones': 'Investments',
+      'formulario-endeudamiento': 'Debt',
     },
     pages: {
       imports: {
@@ -445,7 +448,7 @@ export const en: Messages = {
       },
       mine: {
         title: 'My interactions',
-        description: 'Import and export forms you have filled in.',
+        description: 'Import, export, services, investments and debt forms you have filled in.',
         fillForm: 'Fill in a form',
         lookingForRequests: 'Looking for your advice requests?',
         goToRequests: 'Go to my requests',
@@ -482,6 +485,12 @@ export const en: Messages = {
     summary: 'Request summary',
     print: 'Print / Save as PDF',
     downloadForm: 'Download form',
+    downloadDeclaration: 'Download data sheet',
+    declarationPdf: {
+      title: 'Minimum data sheet',
+      notice:
+        'Supporting document. It is not the official Banco de la República form: DCIP-83 Annex 1 does not publish a template for this operation. Check the current format with your foreign exchange market intermediary.',
+    },
     pdfDownloadFailed: 'The completed form could not be downloaded.',
     numeralDescription: 'Numeral description',
     updated: 'The form for numeral {code} was updated successfully.',
@@ -496,13 +505,16 @@ export const en: Messages = {
       filterLabel: 'Filter forms',
       imports: 'Imports',
       exports: 'Exports',
+      services: 'Services',
+      investments: 'Investments',
+      debts: 'Debt',
       userId: 'User ID',
       userIdPlaceholder: 'User identifier',
       userIdInvalid: 'Enter a valid user identifier.',
       loading: 'Loading forms…',
       emptyTitle: 'There are no forms to show yet',
       emptyFiltered: 'Adjust the filters to see other forms.',
-      emptyDescription: 'The import and export forms you fill in will appear here.',
+      emptyDescription: 'The forms you fill in, of any family, will appear here.',
       itemSr: 'form for numeral {code}',
       editTitle: 'Edit form for numeral {code}',
       detailTitle: 'Form details',
@@ -550,11 +562,24 @@ export const en: Messages = {
         observaciones: 'Notes',
         nombreDeclarante: 'Declarant name',
       },
+      declaration: {
+        fechaTramite: 'Operation date',
+        tipoIdentificacion: 'ID type',
+        identificacion: 'ID number',
+        nombreTitular: 'Holder name or company name',
+        monedaNegociacion: 'Negotiation currency code',
+        valorMonedaNegociacion: 'Total value in negotiation currency',
+        tasaCambioDolares: 'Exchange rate to dollars',
+        valorTotalDolares: 'Total value in dollars',
+        observaciones: 'Notes',
+        nombreDeclarante: 'Declarant name',
+      },
     },
   },
   services: {
     requestAdvice: 'Request advice',
     fillForm: 'Fill in form',
+    fillDeclaration: 'Fill in declaration',
     fallbackTitle: 'Service',
     page: {
       eyebrow: 'Services',
@@ -617,6 +642,14 @@ export const en: Messages = {
       submit: 'Send request',
       sent: 'We received your request. An advisor will contact you.',
       viewRequests: 'View my requests',
+    },
+    declaration: {
+      metaTitle: '{service} declaration',
+      fallbackTitle: 'Foreign exchange declaration',
+      eyebrow: 'Foreign exchange declaration',
+      title: 'Foreign exchange declaration',
+      description:
+        'Record the minimum data of your operation and its related foreign exchange numeral. The sheet you download is a supporting document and does not replace the official form.',
     },
   },
 };

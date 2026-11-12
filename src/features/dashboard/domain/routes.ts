@@ -11,6 +11,7 @@ const PRIVATE_PATTERNS: readonly RegExp[] = [
   /^\/importaciones(\/|$)/,
   /^\/exportaciones(\/|$)/,
   /^\/servicios\/[^/]+\/formulario(\/|$)/,
+  /^\/servicios\/[^/]+\/declaracion(\/|$)/,
   /^\/admin(\/|$)/,
 ];
 

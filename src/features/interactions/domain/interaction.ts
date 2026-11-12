@@ -1,7 +1,29 @@
 import type { CatalogCategory } from '../../catalog/domain/catalog';
 import type { TranslateFunction } from '../../i18n/domain/translate';
 
-export type InteractionType = 'formulario-importaciones' | 'formulario-exportaciones';
+/**
+ * Declaraciones de cambio de servicios, inversiones y endeudamiento. Comparten un mismo núcleo de
+ * datos mínimos (DCIP-83 Anexo 1) y se diligencian en una hoja propia, no en un formulario oficial.
+ */
+export const DECLARATION_TYPES = [
+  'formulario-servicios',
+  'formulario-inversiones',
+  'formulario-endeudamiento',
+] as const;
+
+export type DeclarationType = (typeof DECLARATION_TYPES)[number];
+
+export const INTERACTION_TYPES = [
+  'formulario-importaciones',
+  'formulario-exportaciones',
+  ...DECLARATION_TYPES,
+] as const;
+
+export type InteractionType = (typeof INTERACTION_TYPES)[number];
+
+export function isDeclarationType(type: InteractionType): type is DeclarationType {
+  return (DECLARATION_TYPES as readonly InteractionType[]).includes(type);
+}
 
 export interface Interaction {
   id: string;
@@ -47,7 +69,7 @@ export function interactionLabel(type: InteractionType, t: TranslateFunction): s
 }
 
 export function isInteractionType(value: string): value is InteractionType {
-  return value === 'formulario-importaciones' || value === 'formulario-exportaciones';
+  return (INTERACTION_TYPES as readonly string[]).includes(value);
 }
 
 export interface OperationConfig {
@@ -59,4 +81,7 @@ export interface OperationConfig {
 export const OPERATIONS: Record<InteractionType, OperationConfig> = {
   'formulario-importaciones': { category: 'importaciones', numeralField: 'numeralOperacion' },
   'formulario-exportaciones': { category: 'exportaciones', numeralField: 'numeralCambiario' },
+  'formulario-servicios': { category: 'servicios', numeralField: 'numeralCambiario' },
+  'formulario-inversiones': { category: 'inversiones', numeralField: 'numeralCambiario' },
+  'formulario-endeudamiento': { category: 'endeudamiento', numeralField: 'numeralCambiario' },
 };

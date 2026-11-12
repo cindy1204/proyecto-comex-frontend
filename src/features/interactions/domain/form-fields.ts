@@ -6,7 +6,7 @@ import {
 } from '../../common/domain/decimal';
 import type { ValidationIssue } from '../../common/domain/validation';
 import type { TranslationKey } from '../../i18n/domain/translate';
-import { OPERATIONS, type InteractionType } from './interaction';
+import { OPERATIONS, isDeclarationType, type InteractionType } from './interaction';
 
 export interface FormFieldDefinition {
   /** Nombre técnico enviado al backend; no se traduce. */
@@ -213,9 +213,81 @@ const EXPORT_FIELDS: FormFieldDefinition[] = [
   },
 ];
 
+/**
+ * Núcleo común de servicios, inversiones y endeudamiento: el mismo que valida el backend
+ * (`declarationDataSchema`). El anexo DCIP-83 no define campos por familia, así que no se agregan
+ * más campos aquí; el numeral se elige en el selector.
+ */
+const DECLARATION_FIELDS: FormFieldDefinition[] = [
+  {
+    name: 'fechaTramite',
+    labelKey: 'interactions.fields.declaration.fechaTramite',
+    kind: 'date',
+    required: true,
+  },
+  {
+    name: 'tipoIdentificacion',
+    labelKey: 'interactions.fields.declaration.tipoIdentificacion',
+    kind: 'identification',
+    required: true,
+  },
+  {
+    name: 'identificacion',
+    labelKey: 'interactions.fields.declaration.identificacion',
+    kind: 'text',
+    required: true,
+  },
+  {
+    name: 'nombreTitular',
+    labelKey: 'interactions.fields.declaration.nombreTitular',
+    kind: 'text',
+    required: true,
+  },
+  {
+    name: 'monedaNegociacion',
+    labelKey: 'interactions.fields.declaration.monedaNegociacion',
+    kind: 'text',
+    placeholderKey: 'interactions.currencyPlaceholder',
+    required: true,
+  },
+  {
+    name: 'valorMonedaNegociacion',
+    labelKey: 'interactions.fields.declaration.valorMonedaNegociacion',
+    kind: 'number',
+    required: true,
+  },
+  {
+    name: 'tasaCambioDolares',
+    labelKey: 'interactions.fields.declaration.tasaCambioDolares',
+    kind: 'number',
+    required: true,
+  },
+  {
+    name: 'valorTotalDolares',
+    labelKey: 'interactions.fields.declaration.valorTotalDolares',
+    kind: 'number',
+    required: true,
+  },
+  {
+    name: 'observaciones',
+    labelKey: 'interactions.fields.declaration.observaciones',
+    kind: 'textarea',
+    required: false,
+  },
+  {
+    name: 'nombreDeclarante',
+    labelKey: 'interactions.fields.declaration.nombreDeclarante',
+    kind: 'text',
+    required: true,
+  },
+];
+
 export const FORM_FIELDS: Record<InteractionType, FormFieldDefinition[]> = {
   'formulario-importaciones': IMPORT_FIELDS,
   'formulario-exportaciones': EXPORT_FIELDS,
+  'formulario-servicios': DECLARATION_FIELDS,
+  'formulario-inversiones': DECLARATION_FIELDS,
+  'formulario-endeudamiento': DECLARATION_FIELDS,
 };
 
 export type DocumentKey = Extract<TranslationKey, `interactions.documents.${string}`>;
@@ -238,11 +310,15 @@ const EXPORT_DOCUMENTS: Record<string, DocumentKey[]> = {
 /** Exportaciones cuyos numerales no legalizan factura. */
 export const NUMERALS_WITHOUT_INVOICE = ['1045', '1050', '1510'];
 
-/** Documentos sugeridos por numeral, o `null` si no hay regla para ese numeral de importación. */
+/**
+ * Documentos sugeridos por numeral, o `null` si no hay regla: importaciones sin entrada en la tabla
+ * y todas las declaraciones de servicios, inversiones y endeudamiento (el anexo no los define).
+ */
 export function suggestedDocuments(
   type: InteractionType,
   numeralCode: string,
 ): DocumentKey[] | null {
+  if (isDeclarationType(type)) return null;
   if (type === 'formulario-importaciones') return IMPORT_DOCUMENTS[numeralCode] ?? null;
   return (
     EXPORT_DOCUMENTS[numeralCode] ?? [

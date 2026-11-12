@@ -18,11 +18,12 @@ import {
   suggestedDocuments,
   validateInteractionForm,
 } from '../domain/form-fields';
-import { OPERATIONS, type InteractionType } from '../domain/interaction';
+import { OPERATIONS, isDeclarationType, type InteractionType } from '../domain/interaction';
 import { createInteraction } from '../services/interaction.service';
 import { InteractionFields } from './interaction-fields';
 import { downloadFilledImportPdf } from '../import-pdf';
 import { downloadFilledExportPdf } from '../export-pdf';
+import { declarationPdfContent, downloadDeclarationPdf } from '../declaration-pdf';
 
 interface Submitted {
   data: Record<string, string>;
@@ -32,6 +33,8 @@ interface Submitted {
 export function InteractionForm({ type }: Readonly<{ type: InteractionType }>) {
   const { t } = useTranslation();
   const isImport = type === 'formulario-importaciones';
+  const isExport = type === 'formulario-exportaciones';
+  const isDeclaration = isDeclarationType(type);
   const { category, numeralField } = OPERATIONS[type];
   const catalog = useCatalogByCategory(category);
   const [selectedCode, setSelectedCode] = useState('');
@@ -83,8 +86,13 @@ export function InteractionForm({ type }: Readonly<{ type: InteractionType }>) {
     try {
       if (isImport) {
         await downloadFilledImportPdf(submitted.data);
-      } else {
+      } else if (isExport) {
         await downloadFilledExportPdf(submitted.data);
+      } else {
+        // Hoja propia y no oficial: el anexo DCIP-83 no define una plantilla para estas familias.
+        await downloadDeclarationPdf(
+          declarationPdfContent(type, submitted.data, submitted.numeralTitle, t),
+        );
       }
     } catch {
       // Los errores del generador son técnicos; el usuario siempre ve el mensaje traducido.
@@ -101,7 +109,7 @@ export function InteractionForm({ type }: Readonly<{ type: InteractionType }>) {
         key={formKey}
         noValidate
         onInput={(event) => {
-          if (!isImport) setNetAmount(calculateNetReintegro(new FormData(event.currentTarget)));
+          if (isExport) setNetAmount(calculateNetReintegro(new FormData(event.currentTarget)));
           if (error) clearErrors();
         }}
         onSubmit={handleSubmit}
@@ -129,13 +137,13 @@ export function InteractionForm({ type }: Readonly<{ type: InteractionType }>) {
             ) : (
               <p>{t('interactions.noDocuments')}</p>
             )}
-            {!isImport && NUMERALS_WITHOUT_INVOICE.includes(selectedCode) && (
+            {isExport && NUMERALS_WITHOUT_INVOICE.includes(selectedCode) && (
               <p>{t('interactions.noInvoice')}</p>
             )}
           </Alert>
         )}
 
-        {!isImport && (
+        {isExport && (
           <p className="rounded-lg bg-surface-muted p-3 text-foreground">
             {t('interactions.netReintegro')} <strong>USD {netAmount}</strong>
           </p>
@@ -154,7 +162,9 @@ export function InteractionForm({ type }: Readonly<{ type: InteractionType }>) {
               variant="outline"
             >
               <FileDown aria-hidden="true" className="size-4" />
-              {t('interactions.downloadForm')}
+              {isDeclaration
+                ? t('interactions.downloadDeclaration')
+                : t('interactions.downloadForm')}
             </Button>
           )}
         </div>

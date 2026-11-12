@@ -1,5 +1,6 @@
 import { PDFDocument, StandardFonts, type PDFFont, type PDFPage } from 'pdf-lib';
 import { toPdfText } from './pdf-text';
+import { wrapText } from './pdf-wrap';
 
 type ExportFormData = Record<string, FormDataEntryValue>;
 
@@ -67,43 +68,6 @@ function getIdentificationCode(value: string) {
   if (normalized === 'cedula de extranjeria') return 'C.E.';
   if (normalized === 'pasaporte') return 'PAS.';
   return value;
-}
-
-function wrapText(text: string, font: PDFFont, fontSize: number, maxWidth: number) {
-  const lines: string[] = [];
-  const paragraphs = toPdfText(text).split(/\r?\n/);
-
-  for (const paragraph of paragraphs) {
-    let line = '';
-    for (const word of paragraph.split(/\s+/).filter(Boolean)) {
-      const candidate = line ? `${line} ${word}` : word;
-      if (font.widthOfTextAtSize(candidate, fontSize) <= maxWidth) {
-        line = candidate;
-        continue;
-      }
-
-      if (line) {
-        lines.push(line);
-        line = '';
-      }
-
-      let segment = '';
-      for (const character of word) {
-        const nextSegment = segment + character;
-        if (segment && font.widthOfTextAtSize(nextSegment, fontSize) > maxWidth) {
-          lines.push(segment);
-          segment = character;
-        } else {
-          segment = nextSegment;
-        }
-      }
-      line = segment;
-    }
-
-    if (line || !paragraph) lines.push(line);
-  }
-
-  return lines;
 }
 
 function drawLines(

@@ -13,6 +13,8 @@ describe('isPrivatePath', () => {
     '/importaciones',
     '/exportaciones/nuevo',
     '/servicios/inversiones/formulario',
+    '/servicios/inversiones/declaracion',
+    '/servicios/endeudamiento/declaracion/',
     '/admin',
     '/admin/catalogo',
   ])('%s es privada', (path) => {
@@ -24,7 +26,9 @@ describe('isPrivatePath', () => {
     '/servicios',
     '/servicios/inversiones',
     '/servicios/inversiones/formularios',
+    '/servicios/inversiones/declaraciones',
     '/servicios//formulario',
+    '/servicios//declaracion',
     '/catalogo',
     '/administrador',
     '/mis-interaccionesx',

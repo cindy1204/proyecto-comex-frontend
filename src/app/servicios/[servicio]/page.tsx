@@ -39,6 +39,14 @@ async function ServiceContent({ params }: { params: ServiceParams }) {
             <Link className={buttonStyles()} href={service.formHref}>
               {t('services.fillForm')}
             </Link>
+            {service.declarationType && (
+              <Link
+                className={buttonStyles({ variant: 'outline' })}
+                href={`/servicios/${service.slug}/declaracion`}
+              >
+                {t('services.fillDeclaration')}
+              </Link>
+            )}
             <Link
               className={buttonStyles({ variant: 'outline' })}
               href={`${ROUTES.contact}?tipoProducto=${service.contactType}`}
