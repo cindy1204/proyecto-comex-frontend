@@ -103,7 +103,7 @@ export const en: Messages = {
     invalidCredentials: 'Incorrect email or password.',
     forbidden: 'You do not have permission to do this.',
     notFound: 'We could not find what you are looking for.',
-    conflict: 'A record with that data already exists.',
+    conflict: 'We could not complete the request with that information. Review it and try again.',
     payloadTooLarge: 'The file is too large.',
     unsupportedMediaType: 'File format not allowed. Use JPG, PNG or WebP.',
     rateLimited: 'Too many attempts. Wait a moment and try again.',

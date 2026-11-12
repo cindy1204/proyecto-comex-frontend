@@ -105,7 +105,8 @@ export const es = {
     invalidCredentials: 'Correo o contraseña incorrectos.',
     forbidden: 'No tienes permisos para realizar esta acción.',
     notFound: 'No encontramos lo que buscas.',
-    conflict: 'Ya existe un registro con esos datos.',
+    conflict:
+      'No se pudo completar la operación con esos datos. Revisa la información e inténtalo de nuevo.',
     payloadTooLarge: 'El archivo es demasiado grande.',
     unsupportedMediaType: 'Formato de archivo no permitido. Usa JPG, PNG o WebP.',
     rateLimited: 'Demasiados intentos. Espera un momento e intenta de nuevo.',
