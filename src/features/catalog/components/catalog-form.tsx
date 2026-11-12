@@ -8,6 +8,8 @@ import { Input } from '../../common/components/input';
 import { ModalFooter } from '../../common/components/modal-footer';
 import { Select } from '../../common/components/select';
 import { Textarea } from '../../common/components/textarea';
+import { getApiHost } from '../../common/config';
+import { resolveMediaUrl } from '../../common/domain/media-url';
 import { useTranslation } from '../../i18n/hooks/use-translation';
 import {
   CATALOG_CATEGORIES,
@@ -115,7 +117,7 @@ export function CatalogForm({ item, onSaved, onCancel }: Readonly<CatalogFormPro
           <FileInput
             {...control}
             accept={IMAGE_TYPES}
-            currentImageUrl={item?.imageUrl ?? null}
+            currentImageUrl={item?.imageUrl ? resolveMediaUrl(item.imageUrl, getApiHost()) : null}
             invalid={invalid}
             maxSizeMb={IMAGE_MAX_MB}
             name="image"
