@@ -71,24 +71,29 @@ npm run test:watch   # modo interactivo
 
 Cubren únicamente lógica de dominio pura (sin DOM ni red); no hay pruebas de componentes ni de extremo a extremo.
 
-| Archivo                          | Qué verifica                                                                                                                                                                              |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `routes.test.ts`                 | `isPrivatePath`, `isAdminPath`, `isGuestOnlyPath` (prefijos parecidos, barra final, rutas `…/declaracion` de servicios) y `resolvePostAuthPath` por rol y `returnTo`.                     |
-| `safe-path.test.ts`              | Rechazo de redirecciones abiertas (`//evil.com`, `/\evil`, URLs absolutas) en `toSafeInternalPath` y `toOptionalSafePath`.                                                                |
-| `jwt.test.ts`                    | `isJwtExpired` con reloj inyectado (vigente, vencido, sin `exp`, malformado) y decodificación UTF-8 del payload.                                                                          |
-| `id.test.ts`                     | `isCuid`: longitudes límite, mayúsculas y símbolos.                                                                                                                                       |
-| `menu.test.ts`                   | Ítems del menú que ve el visitante, el usuario y el administrador; etiquetas existentes en ambos idiomas.                                                                                 |
-| `catalog-form.test.ts`           | `validateCatalogInput`: campos obligatorios, límites de longitud, dirección e imagen (formato y tamaño); `readCatalogForm`.                                                               |
-| `locale.test.ts`                 | `parseAcceptLanguage` (pesos `q`, regiones) y `resolveLocale` (cookie, cabecera, valor por defecto).                                                                                      |
-| `translate.test.ts`              | `createTranslator`: claves anidadas, interpolación, plurales y clave inexistente.                                                                                                         |
-| `dictionaries.test.ts`           | `es.ts` y `en.ts` tienen exactamente las mismas claves, los mismos parámetros `{nombre}` y variantes plurales completas.                                                                  |
-| `decimal.test.ts`                | `normalizeDecimal` y `parseDecimal` (coma o punto decimal; rechaza signos, notación exponencial y vacíos), redondeo half-up a centavos y `formatCents`.                                   |
-| `calculate-dollar-total.test.ts` | Valor en dólares (monto × tasa) con aritmética decimal exacta; entradas con coma o inválidas.                                                                                             |
-| `net-reintegro.test.ts`          | Reintegro neto (FOB + gastos − deducciones) en centavos y la validación de deducciones que superan la base.                                                                               |
-| `pdf-text.test.ts`               | `toPdfText`: caracteres que la fuente estándar del PDF no dibuja se sustituyen por `?`; conserva saltos de línea y elimina caracteres de control.                                         |
-| `declaration-form.test.ts`       | Familias de declaración (servicios, inversiones, endeudamiento), campos del formulario frente al contrato `strict` del backend, validación, lectura de datos y `suggestedDocuments` nulo. |
-| `declaration-pdf.test.ts`        | `declarationRows` (orden de campos, guion para vacíos, numeral con título), `declarationPdfContent` y `createDeclarationPdf` (A4, varias páginas, emoji y CJK sin fallar).                |
-| `validation.test.ts`             | Validación de correo, inicio de sesión, registro y alta de administradores.                                                                                                               |
+| Archivo                            | Qué verifica                                                                                                                                                                              |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `routes.test.ts`                   | `isPrivatePath`, `isAdminPath`, `isGuestOnlyPath` (prefijos parecidos, barra final, rutas `…/declaracion` de servicios) y `resolvePostAuthPath` por rol y `returnTo`.                     |
+| `safe-path.test.ts`                | Rechazo de redirecciones abiertas (`//evil.com`, `/\evil`, URLs absolutas) en `toSafeInternalPath` y `toOptionalSafePath`.                                                                |
+| `jwt.test.ts`                      | `isJwtExpired` con reloj inyectado (vigente, vencido, sin `exp`, malformado) y decodificación UTF-8 del payload.                                                                          |
+| `id.test.ts`                       | `isCuid`: longitudes límite, mayúsculas y símbolos.                                                                                                                                       |
+| `menu.test.ts`                     | Ítems del menú que ve el visitante, el usuario y el administrador; etiquetas existentes en ambos idiomas.                                                                                 |
+| `catalog-form.test.ts`             | `validateCatalogInput`: campos obligatorios, límites de longitud, dirección e imagen (formato y tamaño); `readCatalogForm`.                                                               |
+| `locale.test.ts`                   | `parseAcceptLanguage` (pesos `q`, regiones) y `resolveLocale` (cookie, cabecera, valor por defecto).                                                                                      |
+| `translate.test.ts`                | `createTranslator`: claves anidadas, interpolación, plurales y clave inexistente.                                                                                                         |
+| `dictionaries.test.ts`             | `es.ts` y `en.ts` tienen exactamente las mismas claves, los mismos parámetros `{nombre}` y variantes plurales completas.                                                                  |
+| `decimal.test.ts`                  | `normalizeDecimal` y `parseDecimal` (coma o punto decimal; rechaza signos, notación exponencial y vacíos), redondeo half-up a centavos y `formatCents`.                                   |
+| `calculate-dollar-total.test.ts`   | Valor en dólares (monto × tasa) con aritmética decimal exacta; entradas con coma o inválidas.                                                                                             |
+| `net-reintegro.test.ts`            | Reintegro neto (FOB + gastos − deducciones) en centavos y la validación de deducciones que superan la base.                                                                               |
+| `pdf-text.test.ts`                 | `toPdfText`: caracteres que la fuente estándar del PDF no dibuja se sustituyen por `?`; conserva saltos de línea y elimina caracteres de control.                                         |
+| `declaration-form.test.ts`         | Familias de declaración (servicios, inversiones, endeudamiento), campos del formulario frente al contrato `strict` del backend, validación, lectura de datos y `suggestedDocuments` nulo. |
+| `declaration-pdf.test.ts`          | `declarationRows` (orden de campos, guion para vacíos, numeral con título), `declarationPdfContent` y `createDeclarationPdf` (A4, varias páginas, emoji y CJK sin fallar).                |
+| `media-url.test.ts`                | `resolveMediaUrl`: antepone el origen del backend a rutas `/api/...`, deja intactas las URLs absolutas y `//`, y devuelve `null` sin imagen.                                              |
+| `identification-and-dates.test.ts` | `nitCheckDigit` (algoritmo DIAN), `identificationIssue` por tipo (NIT con DV obligatorio), monedas vigentes y fechas que no existen o son futuras.                                        |
+| `decimal-canonical.test.ts`        | `canonicalDecimal` (forma canónica del monto), `fitsDigits` (límites de cifras) y `formatDecimalForLocale`.                                                                               |
+| `interaction-validation.test.ts`   | `validateInteractionField` por familia: montos, tasas, fechas, monedas, identificación y total = valor × tasa.                                                                            |
+| `interaction-golden.test.ts`       | Casos dorados compartidos con el backend (`tests/golden/interaction-validation.json`, idéntico en ambos repositorios).                                                                    |
+| `validation.test.ts`               | Validación de correo, inicio de sesión, registro y alta de administradores.                                                                                                               |
 
 ## Credenciales de prueba
 
@@ -108,6 +113,18 @@ Usuarios creados por el seed del backend.
 - **Servicios** (`/servicios`, `/servicios/[servicio]`): contenido informativo, numerales relacionados y enlace al formulario correspondiente. Los servicios de declaración (servicios, inversiones y endeudamiento) enlazan además a `/servicios/[servicio]/declaracion`, que exige sesión. Un servicio inexistente responde un 404 real (ver Notas técnicas).
 - **Panel de administración** (`/admin`): pestañas Catálogo, Interacciones, Solicitudes y Administradores (alta de nuevos administradores). Los totales de cada pestaña se leen de `pagination.total` de los propios listados (`limit=1`), sin endpoints adicionales.
 - **Experiencia común**: tablas que se convierten en tarjetas en móvil, barra de filtros con "Limpiar filtros", selector de tamaño de página, mensajes de éxito y error anunciados a lectores de pantalla (`aria-live`), botones con estado de carga que evitan envíos dobles, modo claro y oscuro.
+
+## Validaciones de formularios
+
+Las reglas viven en `src/features/interactions/domain/` (`form-fields.ts`, `identification-rules.ts`) y en `src/features/common/domain/` (`decimal.ts`, `date.ts`, `currencies.ts`). El backend repite las mismas reglas en `src/application/interaction-data.ts`; el frontend sirve para avisar antes de enviar, y el backend es el que decide.
+
+- **Montos y tasas:** se aceptan coma o punto como separador decimal, pero no un punto final (`1.`), notación científica ni signos. Los montos son mayores que cero, con hasta 15 cifras enteras y 2 decimales; las tasas, con hasta 6 decimales. Mientras la persona escribe, se muestra debajo cómo se leerá el número (p. ej. `1.000` se lee como 1.000 en es-CO, no como 1).
+- **Valor en dólares (provisional):** es de solo lectura y se calcula como valor × tasa en centavos (redondeo half-up). Al enviar, el total debe coincidir con valor × tasa con una tolerancia de un centavo. La dirección de la tasa sigue pendiente de confirmar (ver _Limitaciones conocidas_).
+- **Fechas:** no pueden ser futuras según la hora de Bogotá (`America/Bogota`), ni inexistentes (p. ej. `2026-02-30`).
+- **Monedas:** solo códigos ISO 4217 de la lista oficial, en mayúsculas. Se excluyen fondos, metales, `XXX` y códigos no vigentes.
+- **Identificación:** el formato depende del tipo. NIT: 6 a 10 dígitos seguidos de `-` y el dígito de verificación, que es obligatorio y se valida con el algoritmo de la DIAN. Cédula de ciudadanía: 6 a 10 dígitos. Cédula de extranjería: 6 a 20 caracteres alfanuméricos. Pasaporte: 5 a 20 caracteres alfanuméricos. Las longitudes de cédula y pasaporte son aproximadas y no están tomadas de un anexo oficial.
+- **Validación al salir de un campo:** un campo con valor se valida al salir de él; un campo obligatorio vacío solo muestra error al enviar.
+- **Conservación tras guardar:** al registrar otra operación, se conservan el tipo de identificación, el número y los nombres (importador, exportador, titular, declarante), para no volver a escribirlos.
 
 ## Arquitectura
 
@@ -235,6 +252,11 @@ Un `401` de la API cierra la sesión y los guards redirigen al login con `return
 - **Sesión en el cliente:** el JWT está en `localStorage` y en cookies no `HttpOnly`, así que un script inyectado (XSS) podría leer el token. Pasar a cookies `HttpOnly` exige rediseñar las rutas de autenticación; no está hecho.
 - **Despliegue pendiente:** las URLs de producción de la tabla "Despliegue" no están verificadas. No hay un build desplegado para probar contra un backend real.
 - **Equipo pendiente:** la tabla de reparto no incluye los nombres de quienes asumieron cada parte.
+- **Recuperación de contraseña no implementada:** requiere un proveedor de correo, almacenamiento de tokens y un diseño de seguridad. Pendiente de decisión.
+- **Imágenes sin Supabase:** si el backend guarda la imagen en su propia base de datos, `imageUrl` llega como ruta relativa (`/api/archivos/<id>`). `resolveMediaUrl` (`src/features/common/domain/media-url.ts`) la completa con `NEXT_PUBLIC_API_HOST`; las URLs absolutas de Supabase se usan tal cual.
+- **Dirección de la tasa sin confirmar:** el total se calcula como valor × tasa (el contrato actual del formulario). Si la tasa es una TRM en pesos por dólar, la fórmula correcta sería valor / tasa. Hay que confirmarlo con un ejemplo numérico antes de producción.
+- **Verificación en navegador pendiente:** la impresión (`window.print()` con CSS de impresión), el botón de mostrar contraseña y la validación al salir de un campo se comprobaron con pruebas unitarias, tipos, lint y build, no en un navegador real.
+- **Vista previa de números en edición:** la vista previa aparece al escribir; no se precarga al abrir un registro existente.
 - **Datos mínimos sin especificación por campo:** el Anexo 1 de la DCIP-83 del Banco de la República no define los campos de datos mínimos de servicios, inversiones ni endeudamiento. La lista de campos y la hoja PDF son un núcleo común pendiente de confirmar con la fuente oficial. La hoja se marca como no oficial y no rellena una plantilla oficial.
 - **Verificación:** `npm run build` compila sin errores; las comprobaciones de `i18n:check`, `typecheck`, `lint`, `test` y `format:check` pasan en local.
 
