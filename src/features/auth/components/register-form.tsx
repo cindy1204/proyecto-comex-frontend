@@ -8,6 +8,7 @@ import { Button } from '../../common/components/button';
 import { useTranslation } from '../../i18n/hooks/use-translation';
 import { Field } from '../../common/components/field';
 import { Input } from '../../common/components/input';
+import { PasswordInput } from '../../common/components/password-input';
 import { ROUTES } from '../../common/config';
 import { useFormAction } from '../../common/hooks/use-form-action';
 import { translateIssues } from '../../common/domain/validation';
@@ -40,7 +41,7 @@ export function RegisterForm() {
     },
     [register, t],
   );
-  const { handleSubmit, isSubmitting, error, fieldErrors } = useFormAction(action);
+  const { handleSubmit, isSubmitting, error, fieldErrors, setFieldError } = useFormAction(action);
 
   const loginHref = returnTo
     ? `${ROUTES.login}?returnTo=${encodeURIComponent(returnTo)}`
@@ -83,13 +84,12 @@ export function RegisterForm() {
             required
           >
             {(control) => (
-              <Input
+              <PasswordInput
                 {...control}
                 autoComplete="new-password"
                 maxLength={128}
                 minLength={PASSWORD_MIN_LENGTH}
                 name="password"
-                type="password"
               />
             )}
           </Field>
@@ -99,12 +99,23 @@ export function RegisterForm() {
             required
           >
             {(control) => (
-              <Input
+              <PasswordInput
                 {...control}
                 autoComplete="new-password"
                 maxLength={128}
                 name="confirmPassword"
-                type="password"
+                onBlur={(event) => {
+                  // Avisa de la discrepancia al salir del campo, sin esperar al envío.
+                  const confirmation = event.currentTarget.value;
+                  if (!confirmation || !event.currentTarget.form) return;
+                  const password = String(
+                    new FormData(event.currentTarget.form).get('password') ?? '',
+                  );
+                  setFieldError(
+                    'confirmPassword',
+                    confirmation === password ? null : t('auth.register.passwordMismatch'),
+                  );
+                }}
               />
             )}
           </Field>

@@ -248,3 +248,22 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Impresión: solo se imprime el resumen marcado con data-print-area (ocupa la hoja entera). */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  [data-print-area],
+  [data-print-area] * {
+    visibility: visible;
+  }
+
+  [data-print-area] {
+    position: absolute;
+    inset: 0;
+    box-shadow: none;
+    border: none;
+  }
+}

@@ -17,6 +17,8 @@ export interface FormAction {
   /** Errores por campo (`details` del backend), para pasar a `Field error=...`. */
   fieldErrors: FieldErrors;
   clearErrors: () => void;
+  /** Fija o quita (`null`) el error de un solo campo, p. ej. al salir de él (validación en `blur`). */
+  setFieldError: (name: string, message: string | null) => void;
 }
 
 /**
@@ -49,6 +51,18 @@ export function useFormAction<TResult>(
     setFieldErrors({});
   }, []);
 
+  const setFieldError = useCallback((name: string, message: string | null) => {
+    setFieldErrors((current) => {
+      if (message === null) {
+        if (!(name in current)) return current;
+        const next = { ...current };
+        delete next[name];
+        return next;
+      }
+      return current[name] === message ? current : { ...current, [name]: message };
+    });
+  }, []);
+
   const handleSubmit = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
@@ -73,5 +87,5 @@ export function useFormAction<TResult>(
     [action, onSuccess, clearErrors, t],
   );
 
-  return { handleSubmit, isSubmitting, error, fieldErrors, clearErrors };
+  return { handleSubmit, isSubmitting, error, fieldErrors, clearErrors, setFieldError };
 }

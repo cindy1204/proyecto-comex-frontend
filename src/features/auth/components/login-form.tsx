@@ -8,6 +8,7 @@ import { Button } from '../../common/components/button';
 import { useTranslation } from '../../i18n/hooks/use-translation';
 import { Field } from '../../common/components/field';
 import { Input } from '../../common/components/input';
+import { PasswordInput } from '../../common/components/password-input';
 import { ROUTES } from '../../common/config';
 import { useFormAction } from '../../common/hooks/use-form-action';
 import { translateIssues } from '../../common/domain/validation';
@@ -73,12 +74,11 @@ export function LoginForm() {
           </Field>
           <Field error={fieldErrors.password} label={t('auth.fields.password')} required>
             {(control) => (
-              <Input
+              <PasswordInput
                 {...control}
                 autoComplete="current-password"
                 maxLength={128}
                 name="password"
-                type="password"
               />
             )}
           </Field>

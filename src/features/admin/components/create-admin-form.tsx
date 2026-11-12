@@ -6,6 +6,7 @@ import { Alert } from '../../common/components/alert';
 import { Button } from '../../common/components/button';
 import { Field } from '../../common/components/field';
 import { Input } from '../../common/components/input';
+import { PasswordInput } from '../../common/components/password-input';
 import { translateIssues } from '../../common/domain/validation';
 import { useFormAction } from '../../common/hooks/use-form-action';
 import { validationError } from '../../common/services/api-error';
@@ -68,13 +69,12 @@ export function CreateAdminForm() {
         required
       >
         {(control) => (
-          <Input
+          <PasswordInput
             {...control}
             autoComplete="new-password"
             maxLength={128}
             minLength={ADMIN_PASSWORD_MIN_LENGTH}
             name="password"
-            type="password"
           />
         )}
       </Field>
