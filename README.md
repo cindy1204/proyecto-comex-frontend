@@ -30,7 +30,7 @@ Construido con Next.js 16 (App Router), React 19, TypeScript estricto y Tailwind
 | Frontend   | Interfaz Next.js, navegación, autenticación en cliente, formularios, catálogo, solicitudes, experiencia adaptable y descarga en PDF de los formularios oficiales (importación y exportación) y de hojas de datos mínimos no oficiales (servicios, inversiones y endeudamiento). |
 | Backend    | API REST, autenticación y roles, validación, persistencia PostgreSQL/Prisma, migraciones, seed de prueba, catálogo e integración con el frontend.                                                                                                                               |
 
-Esta tabla describe la división técnica por repositorio; el equipo puede agregar los nombres de quienes asumieron cada parte.
+Esta tabla describe la división técnica por repositorio. Integrantes del equipo: Miguel Cárdenas y Cindy Bohorquez.
 
 ## Instalación y ejecución
 
