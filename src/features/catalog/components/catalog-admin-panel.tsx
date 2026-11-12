@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Plus, RotateCcw, SquarePen, Trash2 } from 'lucide-react';
+import { Eye, Plus, RotateCcw, SquarePen, Trash2 } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { Badge } from '../../common/components/badge';
 import { Button, buttonStyles } from '../../common/components/button';
@@ -253,21 +253,36 @@ export function CatalogAdminPanel() {
             item.state === 'ACTIVE' ? (
               <>
                 <Link
-                  className={buttonStyles({ variant: 'ghost', size: 'sm' })}
+                  aria-label={`${t('catalog.admin.view')} ${t('catalog.admin.itemSr', { code: item.code })}`}
+                  className={buttonStyles({
+                    variant: 'ghost',
+                    size: 'sm',
+                    className: 'size-11 px-0',
+                  })}
                   href={catalogItemPath(item.id)}
+                  title={t('catalog.admin.view')}
                 >
-                  {t('catalog.admin.view')}
-                  <span className="sr-only"> {t('catalog.admin.itemSr', { code: item.code })}</span>
+                  <Eye aria-hidden="true" className="size-4" />
                 </Link>
-                <Button onClick={() => setForm({ mode: 'edit', item })} size="sm" variant="outline">
+                <Button
+                  aria-label={`${t('catalog.admin.edit')} ${t('catalog.admin.itemSr', { code: item.code })}`}
+                  className="size-11 px-0"
+                  onClick={() => setForm({ mode: 'edit', item })}
+                  size="sm"
+                  title={t('catalog.admin.edit')}
+                  variant="outline"
+                >
                   <SquarePen aria-hidden="true" className="size-4" />
-                  {t('catalog.admin.edit')}
-                  <span className="sr-only"> {t('catalog.admin.itemSr', { code: item.code })}</span>
                 </Button>
-                <Button onClick={() => actions.remove.ask(item)} size="sm" variant="danger">
+                <Button
+                  aria-label={`${t('catalog.admin.remove')} ${t('catalog.admin.itemSr', { code: item.code })}`}
+                  className="size-11 px-0"
+                  onClick={() => actions.remove.ask(item)}
+                  size="sm"
+                  title={t('catalog.admin.remove')}
+                  variant="danger"
+                >
                   <Trash2 aria-hidden="true" className="size-4" />
-                  {t('catalog.admin.remove')}
-                  <span className="sr-only"> {t('catalog.admin.itemSr', { code: item.code })}</span>
                 </Button>
               </>
             ) : (

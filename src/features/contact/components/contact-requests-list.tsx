@@ -182,35 +182,37 @@ export function ContactRequestsList({ scope }: Readonly<ContactRequestsListProps
         <DataTable
           actions={(item) => (
             <>
-              <Button onClick={() => setDialog({ mode: 'view', item })} size="sm" variant="ghost">
+              <Button
+                aria-label={`${t('common.view')} ${t('contact.list.itemSr', { name: item.nombreCompleto })}`}
+                className="size-11 px-0"
+                onClick={() => setDialog({ mode: 'view', item })}
+                size="sm"
+                title={t('common.view')}
+                variant="ghost"
+              >
                 <Eye aria-hidden="true" className="size-4" />
-                {t('common.view')}
-                <span className="sr-only">
-                  {' '}
-                  {t('contact.list.itemSr', { name: item.nombreCompleto })}
-                </span>
               </Button>
               {!isAdminScope && (
                 <Button
                   onClick={() => setDialog({ mode: 'edit', item })}
+                  aria-label={`${t('common.edit')} ${t('contact.list.itemSr', { name: item.nombreCompleto })}`}
+                  className="size-11 px-0"
                   size="sm"
+                  title={t('common.edit')}
                   variant="outline"
                 >
                   <SquarePen aria-hidden="true" className="size-4" />
-                  {t('common.edit')}
-                  <span className="sr-only">
-                    {' '}
-                    {t('contact.list.itemSr', { name: item.nombreCompleto })}
-                  </span>
                 </Button>
               )}
-              <Button onClick={() => actions.remove.ask(item)} size="sm" variant="danger">
+              <Button
+                aria-label={`${t('common.delete')} ${t('contact.list.itemSr', { name: item.nombreCompleto })}`}
+                className="size-11 px-0"
+                onClick={() => actions.remove.ask(item)}
+                size="sm"
+                title={t('common.delete')}
+                variant="danger"
+              >
                 <Trash2 aria-hidden="true" className="size-4" />
-                {t('common.delete')}
-                <span className="sr-only">
-                  {' '}
-                  {t('contact.list.itemSr', { name: item.nombreCompleto })}
-                </span>
               </Button>
             </>
           )}

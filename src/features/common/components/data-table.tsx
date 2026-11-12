@@ -83,9 +83,7 @@ export function DataTable<T>({
               ))}
               {actions && (
                 <td className="block pt-2 md:table-cell md:px-4 md:py-3 md:align-top">
-                  <div className="flex flex-col items-start gap-2 md:flex-row md:flex-wrap">
-                    {actions(row)}
-                  </div>
+                  <div className="flex flex-wrap gap-2">{actions(row)}</div>
                 </td>
               )}
             </tr>
