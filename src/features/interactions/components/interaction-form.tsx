@@ -1,7 +1,7 @@
 'use client';
 
 import { FileDown, Printer } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type FocusEvent } from 'react';
 import { Alert } from '../../common/components/alert';
 import { Button } from '../../common/components/button';
 import { Card } from '../../common/components/card';
@@ -12,10 +12,12 @@ import { useTranslation } from '../../i18n/hooks/use-translation';
 import { useCatalogByCategory } from '../../catalog/hooks/use-catalog';
 import {
   NUMERALS_WITHOUT_INVOICE,
+  RETAINED_FIELDS,
   calculateNetReintegro,
   fieldLabelKey,
   readInteractionData,
   suggestedDocuments,
+  validateInteractionField,
   validateInteractionForm,
 } from '../domain/form-fields';
 import { OPERATIONS, isDeclarationType, type InteractionType } from '../domain/interaction';
@@ -40,10 +42,13 @@ export function InteractionForm({ type }: Readonly<{ type: InteractionType }>) {
   const [selectedCode, setSelectedCode] = useState('');
   const [netAmount, setNetAmount] = useState('0.00');
   const [submitted, setSubmitted] = useState<Submitted | null>(null);
+  // Datos de identidad que sobreviven al guardar: se pasan como valores iniciales tras remontar.
+  const [retained, setRetained] = useState<Record<string, string>>({});
   // Cambiar la key remonta el formulario: limpia campos, cálculos y numeral tras guardar.
   const [formKey, setFormKey] = useState(0);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
+  const summaryHeadingRef = useRef<HTMLHeadingElement>(null);
 
   const items = useMemo(() => catalog.data ?? [], [catalog.data]);
   const selectedItem = items.find((item) => item.code === selectedCode);
@@ -66,6 +71,9 @@ export function InteractionForm({ type }: Readonly<{ type: InteractionType }>) {
         data,
         numeralTitle: items.find((item) => item.code === data[numeralField])?.title,
       });
+      setRetained(
+        Object.fromEntries(Object.entries(data).filter(([key]) => RETAINED_FIELDS.includes(key))),
+      );
       setFormKey((key) => key + 1);
       setSelectedCode('');
       setNetAmount('0.00');
@@ -73,11 +81,34 @@ export function InteractionForm({ type }: Readonly<{ type: InteractionType }>) {
     [items, numeralField],
   );
 
-  const { handleSubmit, isSubmitting, error, fieldErrors, clearErrors } = useFormAction(submit, {
-    onSuccess,
-  });
+  const { handleSubmit, isSubmitting, error, fieldErrors, clearErrors, setFieldError } =
+    useFormAction(submit, { onSuccess });
+
+  // Tras guardar, el foco va al resumen: la persona oye y ve el resultado sin buscarlo.
+  useEffect(() => {
+    if (submitted) summaryHeadingRef.current?.focus();
+  }, [submitted]);
 
   const canSubmit = !catalog.isLoading && !catalog.error && items.length > 0;
+
+  /** Valida un campo al salir de él. Un campo vacío solo se marca si ya tenía error. */
+  const handleBlur = (event: FocusEvent<HTMLFormElement>) => {
+    const target = event.target;
+    if (
+      !(
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLSelectElement ||
+        target instanceof HTMLTextAreaElement
+      ) ||
+      !target.name
+    )
+      return;
+    const values = new FormData(event.currentTarget);
+    const value = String(values.get(target.name) ?? '').trim();
+    if (!value && !fieldErrors[target.name]) return;
+    const issue = validateInteractionField(type, target.name, values);
+    setFieldError(target.name, issue ? t(issue.key, issue.params) : null);
+  };
 
   const downloadForm = async () => {
     if (!submitted) return;
@@ -108,6 +139,7 @@ export function InteractionForm({ type }: Readonly<{ type: InteractionType }>) {
         className="flex flex-col gap-5"
         key={formKey}
         noValidate
+        onBlur={handleBlur}
         onInput={(event) => {
           if (isExport) setNetAmount(calculateNetReintegro(new FormData(event.currentTarget)));
           if (error) clearErrors();
@@ -116,6 +148,7 @@ export function InteractionForm({ type }: Readonly<{ type: InteractionType }>) {
       >
         <InteractionFields
           fieldErrors={fieldErrors}
+          initialData={retained}
           numeral={{
             items,
             isLoading: catalog.isLoading,
@@ -151,10 +184,15 @@ export function InteractionForm({ type }: Readonly<{ type: InteractionType }>) {
         {error && <Alert>{error}</Alert>}
         {submitted && <Alert tone="success">{t('interactions.saved')}</Alert>}
         {downloadError && <Alert>{downloadError}</Alert>}
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Button disabled={!canSubmit} isLoading={isSubmitting} type="submit">
             {isSubmitting ? t('interactions.saving') : t('interactions.save')}
           </Button>
+          {!canSubmit && !catalog.isLoading && (
+            <p className="text-sm text-muted-foreground" role="status">
+              {t('interactions.saveUnavailable')}
+            </p>
+          )}
           {submitted && (
             <Button
               isLoading={isDownloadingPdf}
@@ -174,11 +212,18 @@ export function InteractionForm({ type }: Readonly<{ type: InteractionType }>) {
         <Card
           aria-label={t('interactions.copyLabel')}
           className="flex flex-col gap-4"
+          data-print-area
           role="region"
         >
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="type-subtitle text-foreground">{t('interactions.summary')}</h2>
-            <Button onClick={() => window.print()} variant="outline">
+            <h2
+              className="type-subtitle text-foreground focus:outline-none"
+              ref={summaryHeadingRef}
+              tabIndex={-1}
+            >
+              {t('interactions.summary')}
+            </h2>
+            <Button className="print:hidden" onClick={() => window.print()} variant="outline">
               <Printer aria-hidden="true" className="size-4" />
               {t('interactions.print')}
             </Button>

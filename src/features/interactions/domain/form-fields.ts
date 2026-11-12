@@ -1,18 +1,23 @@
 import {
+  canonicalDecimal,
   decimalToCents,
+  fitsDigits,
   formatCents,
-  normalizeDecimal,
   parseDecimal,
 } from '../../common/domain/decimal';
+import { isCurrencyCode } from '../../common/domain/currencies';
+import { isRealIsoDate, todayInBogota } from '../../common/domain/date';
 import type { ValidationIssue } from '../../common/domain/validation';
 import type { TranslationKey } from '../../i18n/domain/translate';
+import { calculateDollarTotal } from './calculate-dollar-total';
+import { identificationIssue } from './identification-rules';
 import { OPERATIONS, isDeclarationType, type InteractionType } from './interaction';
 
 export interface FormFieldDefinition {
   /** Nombre técnico enviado al backend; no se traduce. */
   name: string;
   labelKey: TranslationKey;
-  kind: 'text' | 'date' | 'number' | 'identification' | 'textarea';
+  kind: 'text' | 'date' | 'number' | 'currency' | 'identification' | 'textarea';
   placeholderKey?: TranslationKey;
   required: boolean;
 }
@@ -53,7 +58,7 @@ const IMPORT_FIELDS: FormFieldDefinition[] = [
   {
     name: 'monedaNegociacion',
     labelKey: 'interactions.fields.import.monedaNegociacion',
-    kind: 'text',
+    kind: 'currency',
     placeholderKey: 'interactions.currencyPlaceholder',
     required: true,
   },
@@ -147,7 +152,7 @@ const EXPORT_FIELDS: FormFieldDefinition[] = [
   {
     name: 'monedaNegociacion',
     labelKey: 'interactions.fields.export.monedaNegociacion',
-    kind: 'text',
+    kind: 'currency',
     placeholderKey: 'interactions.currencyPlaceholder',
     required: true,
   },
@@ -246,7 +251,7 @@ const DECLARATION_FIELDS: FormFieldDefinition[] = [
   {
     name: 'monedaNegociacion',
     labelKey: 'interactions.fields.declaration.monedaNegociacion',
-    kind: 'text',
+    kind: 'currency',
     placeholderKey: 'interactions.currencyPlaceholder',
     required: true,
   },
@@ -348,7 +353,9 @@ export function readInteractionData(
   );
   const data: Record<string, string> = {};
   for (const [key, value] of values.entries()) {
-    data[key] = numericFields.has(key) ? normalizeDecimal(String(value)) : String(value);
+    data[key] = numericFields.has(key)
+      ? (canonicalDecimal(String(value)) ?? String(value).trim())
+      : String(value);
   }
   if (type === 'formulario-exportaciones')
     data.reintegroNetoCalculado = calculateNetReintegro(values);
@@ -362,30 +369,131 @@ export function fieldLabelKey(type: InteractionType, name: string): TranslationK
   return FORM_FIELDS[type].find((field) => field.name === name)?.labelKey;
 }
 
-const CURRENCY_PATTERN = /^[A-Za-z]{3}$/;
+/** Datos de identidad que se conservan al guardar otra operación (el resto se limpia). */
+export const RETAINED_FIELDS: readonly string[] = [
+  'tipoIdentificacion',
+  'identificacion',
+  'nombreImportador',
+  'nombreExportador',
+  'nombreTitular',
+  'nombreDeclarante',
+];
+
+/** Campo de tasa de cambio según la operación: la importación la llama `tipoCambioDolar`. */
+export function exchangeFieldOf(type: InteractionType): string {
+  return type === 'formulario-importaciones' ? 'tipoCambioDolar' : 'tasaCambioDolares';
+}
+
+/** Montos y tasas: deben ser mayores que cero. Los demás valores numéricos pueden ser cero. */
+const POSITIVE_NUMBER_FIELDS: ReadonlySet<string> = new Set([
+  'valorMonedaNegociacion',
+  'valorTotalDolares',
+  'tipoCambioDolar',
+  'tasaCambioDolares',
+]);
+const RATE_FIELDS: ReadonlySet<string> = new Set(['tipoCambioDolar', 'tasaCambioDolares']);
+
+/** Límites de dígitos: enteros hasta 15; montos con 2 decimales y tasas con 6. */
+export const MAX_INTEGER_DIGITS = 15;
+export const MAX_AMOUNT_DECIMALS = 2;
+export const MAX_RATE_DECIMALS = 6;
+
+/** El total en dólares se compara con valor × tasa con una tolerancia de un centavo. */
+const TOTAL_TOLERANCE_CENTS = BigInt(1);
+
+function readValue(values: FormData, name: string): string {
+  return String(values.get(name) ?? '').trim();
+}
+
+function numberIssue(field: string, raw: string): ValidationIssue | null {
+  const canonical = canonicalDecimal(raw);
+  if (canonical === null) return { field, key: 'validation.numberInvalid' };
+  const maxFraction = RATE_FIELDS.has(field) ? MAX_RATE_DECIMALS : MAX_AMOUNT_DECIMALS;
+  if (!fitsDigits(canonical, MAX_INTEGER_DIGITS, maxFraction))
+    return {
+      field,
+      key: 'validation.numberTooLong',
+      params: { integer: MAX_INTEGER_DIGITS, fraction: maxFraction },
+    };
+  if (POSITIVE_NUMBER_FIELDS.has(field) && parseDecimal(canonical)?.digits === BigInt(0))
+    return { field, key: 'validation.numberPositive' };
+  return null;
+}
+
+/** Total en dólares igual a valor × tasa (con tolerancia de un centavo). */
+function totalIssue(type: InteractionType, values: FormData): ValidationIssue | null {
+  const expected = calculateDollarTotal(
+    readValue(values, 'valorMonedaNegociacion'),
+    readValue(values, exchangeFieldOf(type)),
+  );
+  const expectedCents = decimalToCents(expected);
+  const totalCents = decimalToCents(readValue(values, 'valorTotalDolares'));
+  if (expectedCents === null || totalCents === null) return null;
+  const difference = totalCents - expectedCents;
+  const absolute = difference < BigInt(0) ? -difference : difference;
+  return absolute > TOTAL_TOLERANCE_CENTS
+    ? { field: 'valorTotalDolares', key: 'validation.totalMismatch', params: { expected } }
+    : null;
+}
+
+function dateIssue(field: string, value: string, today: string): ValidationIssue | null {
+  if (!isRealIsoDate(value)) return { field, key: 'validation.dateInvalid' };
+  if (value > today) return { field, key: 'validation.dateFuture' };
+  return null;
+}
 
 /**
- * Valida el formulario de una operación: campos `required`, numéricos con coma o punto
- * decimal y no negativos, moneda de 3 letras, numeral seleccionado y reintegro neto no negativo.
+ * Problema de un solo campo, o `null`. Lo usan el envío completo y la validación al salir del campo.
+ * `today` (fecha de Bogotá) es parámetro para poder probar las reglas de fecha.
+ */
+export function validateInteractionField(
+  type: InteractionType,
+  name: string,
+  values: FormData,
+  today: string = todayInBogota(),
+): ValidationIssue | null {
+  const definition = FORM_FIELDS[type].find((field) => field.name === name);
+  if (!definition) return null;
+  const value = readValue(values, name);
+  if (!value) return definition.required ? { field: name, key: 'validation.required' } : null;
+
+  if (name === 'identificacion') {
+    const identificationType = readValue(values, 'tipoIdentificacion');
+    const key = identificationType ? identificationIssue(identificationType, value) : null;
+    return key ? { field: name, key } : null;
+  }
+  switch (definition.kind) {
+    case 'number': {
+      const issue = numberIssue(name, value);
+      if (issue) return issue;
+      return name === 'valorTotalDolares' ? totalIssue(type, values) : null;
+    }
+    case 'date':
+      return dateIssue(name, value, today);
+    case 'currency':
+      return isCurrencyCode(value) ? null : { field: name, key: 'validation.currencyInvalid' };
+    default:
+      return null;
+  }
+}
+
+/**
+ * Valida el formulario completo: campos obligatorios y su formato, numeral seleccionado,
+ * total = valor × tasa y reintegro neto no negativo.
  */
 export function validateInteractionForm(
   type: InteractionType,
   values: FormData,
+  today: string = todayInBogota(),
 ): ValidationIssue[] {
-  const read = (name: string) => String(values.get(name) ?? '').trim();
   const issues: ValidationIssue[] = [];
-  for (const { name, kind, required } of FORM_FIELDS[type]) {
-    const value = read(name);
-    if (!value) {
-      if (required) issues.push({ field: name, key: 'validation.required' });
-    } else if (kind === 'number' && parseDecimal(value) === null) {
-      issues.push({ field: name, key: 'validation.numberInvalid' });
-    } else if (name === 'monedaNegociacion' && !CURRENCY_PATTERN.test(value)) {
-      issues.push({ field: name, key: 'validation.currencyInvalid' });
-    }
+  for (const { name } of FORM_FIELDS[type]) {
+    const issue = validateInteractionField(type, name, values, today);
+    if (issue) issues.push(issue);
   }
   const numeralField = OPERATIONS[type].numeralField;
-  if (!read(numeralField)) issues.push({ field: numeralField, key: 'validation.required' });
+  if (!readValue(values, numeralField))
+    issues.push({ field: numeralField, key: 'validation.required' });
   if (type === 'formulario-exportaciones' && calculateNetCents(values) < BigInt(0))
     issues.push({ field: 'deducciones', key: 'validation.netNegative' });
   return issues;

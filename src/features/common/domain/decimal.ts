@@ -10,7 +10,8 @@ export interface ParsedDecimal {
   scale: number;
 }
 
-const DECIMAL_PATTERN = /^(\d*)(?:\.(\d*))?$/;
+/** Entero opcional y, si hay punto, al menos un decimal: `1`, `1.5`, `.5`. Rechaza `1.` y `.`. */
+const DECIMAL_PATTERN = /^(\d*)(?:\.(\d+))?$/;
 
 /**
  * Acepta coma o punto como separador decimal. En estilo colombiano el punto agrupa miles
@@ -23,12 +24,30 @@ export function normalizeDecimal(value: string): string {
   return decimalSeparatorIsComma ? trimmed.replace(/\./g, '').replace(',', '.') : trimmed;
 }
 
-/** Devuelve `null` si el texto no es un número decimal no negativo (sin signo ni notación científica). */
-export function parseDecimal(value: string): ParsedDecimal | null {
+/**
+ * Forma canónica con punto decimal (`1000.50`, `0.5`), o `null` si el texto no es un número
+ * decimal no negativo (sin signo, sin punto final ni notación científica).
+ */
+export function canonicalDecimal(value: string): string | null {
   const match = DECIMAL_PATTERN.exec(normalizeDecimal(value));
   if (!match || (!match[1] && !match[2])) return null;
-  const fraction = match[2] ?? '';
-  return { digits: BigInt(`${match[1] || '0'}${fraction}`), scale: fraction.length };
+  const whole = match[1] || '0';
+  return match[2] ? `${whole}.${match[2]}` : whole;
+}
+
+/** Cuenta dígitos enteros (sin ceros a la izquierda) y decimales de una forma canónica. */
+export function fitsDigits(canonical: string, maxInteger: number, maxFraction: number): boolean {
+  const [whole, fraction = ''] = canonical.split('.');
+  const integerDigits = whole.replace(/^0+(?=\d)/, '').length;
+  return integerDigits <= maxInteger && fraction.length <= maxFraction;
+}
+
+/** Devuelve `null` si el texto no es un número decimal no negativo (sin signo ni notación científica). */
+export function parseDecimal(value: string): ParsedDecimal | null {
+  const canonical = canonicalDecimal(value);
+  if (canonical === null) return null;
+  const [whole, fraction = ''] = canonical.split('.');
+  return { digits: BigInt(`${whole}${fraction}`), scale: fraction.length };
 }
 
 /** Convierte un número con escala en centavos, redondeando la mitad hacia arriba. */
@@ -51,4 +70,17 @@ export function formatCents(cents: bigint): string {
   const whole = absolute / BigInt(100);
   const fraction = (absolute % BigInt(100)).toString().padStart(2, '0');
   return `${sign}${whole}.${fraction}`;
+}
+
+/**
+ * Muestra una forma canónica con los separadores del idioma (`1000.5` → `1.000,5` en es-CO).
+ * Usa texto y no `Number`, así no se pierde precisión con montos grandes.
+ */
+export function formatDecimalForLocale(canonical: string, intlLocale: string): string {
+  const [whole, fraction] = canonical.split('.');
+  const separators = new Intl.NumberFormat(intlLocale).formatToParts(1000.5);
+  const group = separators.find((part) => part.type === 'group')?.value ?? ',';
+  const decimal = separators.find((part) => part.type === 'decimal')?.value ?? '.';
+  const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, group);
+  return fraction === undefined ? grouped : `${grouped}${decimal}${fraction}`;
 }

@@ -24,7 +24,7 @@ function formOf(entries: Record<string, string>): FormData {
 const VALID_DECLARATION: Record<string, string> = {
   fechaTramite: '2026-10-01',
   tipoIdentificacion: 'NIT',
-  identificacion: '900123456',
+  identificacion: '900123456-8',
   nombreTitular: 'ACME S.A.S.',
   monedaNegociacion: 'USD',
   valorMonedaNegociacion: '1000,50',
